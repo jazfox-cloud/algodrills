@@ -1,0 +1,8 @@
+source_url,source_path,evidence_tier,reason,next_action
+http://www.interviewbits.com:80/blog/2014/11/29/insert/,/blog/2014/11/29/insert/,Silver,Deferred by three-page recovery limit,await_next_batch
+http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/,/blog/2014/12/01/plus-minus-array/,Silver,Deferred by three-page recovery limit,await_next_batch
+http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/,/blog/2014/12/02/log-every-second/,Silver,Deferred by three-page recovery limit,await_next_batch
+http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/,/blog/2014/12/11/random-number-with-distribution/,Silver,Deferred by three-page recovery limit,await_next_batch
+http://www.interviewbits.com:80/blog/2014/12/15/celebrities/,/blog/2014/12/15/celebrities/,Silver,Deferred by three-page recovery limit,await_next_batch
+http://www.interviewbits.com:80/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/,/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/,Silver,Deferred by three-page recovery limit,await_next_batch
+http://www.interviewbits.com:80/blog/2015/02/02/center-points/,/blog/2015/02/02/center-points/,Silver,Deferred by three-page recovery limit,await_next_batch

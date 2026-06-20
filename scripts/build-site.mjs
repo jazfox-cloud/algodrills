@@ -1,0 +1,287 @@
+#!/usr/bin/env node
+
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import path from "node:path";
+
+const root = process.cwd();
+const contentDir = path.join(root, "boilerplate/content/gold");
+const distDir = path.join(root, "dist");
+const site = {
+  title: "Algorithm Notes",
+  description: "Independent algorithm interview notes rebuilt from verified historical archive evidence.",
+  baseUrl: normalizeBaseUrl(process.env.SITE_URL || "https://example.com"),
+};
+
+await main().catch((error) => {
+  console.error(error?.stack || error?.message || String(error));
+  process.exit(1);
+});
+
+async function main() {
+  await rm(distDir, { recursive: true, force: true });
+  await mkdir(distDir, { recursive: true });
+
+  const articles = await loadArticles();
+  articles.sort((a, b) => a.title.localeCompare(b.title));
+
+  await writeFile(path.join(distDir, "index.html"), renderIndex(articles));
+  await writeFile(path.join(distDir, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n");
+  await writeFile(path.join(distDir, "sitemap.xml"), renderSitemap(articles));
+
+  for (const article of articles) {
+    const dir = path.join(distDir, article.slug);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, "index.html"), renderArticle(article, articles));
+  }
+
+  console.log(`Built ${articles.length} articles into ${distDir}`);
+}
+
+async function loadArticles() {
+  const files = await readdir(contentDir);
+  const markdownFiles = files.filter((file) => file.endsWith(".md"));
+  const articles = [];
+
+  for (const file of markdownFiles) {
+    const raw = await readFile(path.join(contentDir, file), "utf8");
+    const parsed = parseMarkdownFile(raw);
+    const slug = file.replace(/\.md$/, "");
+    articles.push({
+      ...parsed.frontmatter,
+      slug,
+      body: markdownToHtml(parsed.body),
+    });
+  }
+
+  return articles;
+}
+
+function parseMarkdownFile(raw) {
+  if (!raw.startsWith("---\n")) throw new Error("Markdown file is missing frontmatter");
+  const end = raw.indexOf("\n---", 4);
+  if (end === -1) throw new Error("Markdown file has unterminated frontmatter");
+
+  const block = raw.slice(4, end);
+  const frontmatter = {};
+  for (const line of block.split(/\r?\n/)) {
+    const match = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+    if (!match) continue;
+    frontmatter[match[1]] = stripQuotes(match[2].trim());
+  }
+
+  return { frontmatter, body: raw.slice(end + 5).trim() };
+}
+
+function stripQuotes(value) {
+  return value.replace(/^["']|["']$/g, "");
+}
+
+function markdownToHtml(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const html = [];
+  let paragraph = [];
+  let list = [];
+  let inCode = false;
+  let codeLines = [];
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    html.push(`<p>${inline(paragraph.join(" "))}</p>`);
+    paragraph = [];
+  };
+
+  const flushList = () => {
+    if (!list.length) return;
+    html.push(`<ul>${list.map((item) => `<li>${inline(item)}</li>`).join("")}</ul>`);
+    list = [];
+  };
+
+  for (const line of lines) {
+    if (line.startsWith("```")) {
+      if (inCode) {
+        html.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+        codeLines = [];
+        inCode = false;
+      } else {
+        flushParagraph();
+        flushList();
+        inCode = true;
+      }
+      continue;
+    }
+
+    if (inCode) {
+      codeLines.push(line);
+      continue;
+    }
+
+    if (!line.trim()) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      flushList();
+      const level = heading[1].length;
+      html.push(`<h${level}>${inline(heading[2])}</h${level}>`);
+      continue;
+    }
+
+    const bullet = line.match(/^\s*[-*]\s+(.+)$/);
+    if (bullet) {
+      flushParagraph();
+      list.push(bullet[1]);
+      continue;
+    }
+
+    paragraph.push(line.trim());
+  }
+
+  flushParagraph();
+  flushList();
+  return html.join("\n");
+}
+
+function inline(value) {
+  return escapeHtml(value)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function renderIndex(articles) {
+  const cards = articles
+    .map(
+      (article) => `
+        <article class="card">
+          <a href="/${article.slug}/">${escapeHtml(article.title)}</a>
+          <p>${escapeHtml(article.topic)} · ${escapeHtml(article.evidence_tier)} · independently rewritten</p>
+        </article>`,
+    )
+    .join("\n");
+
+  return layout({
+    title: site.title,
+    description: site.description,
+    body: `
+      <section class="hero">
+        <p class="eyebrow">Public recovery mode</p>
+        <h1>Algorithm interview notes rebuilt from verified archive rows.</h1>
+        <p>${escapeHtml(site.description)}</p>
+      </section>
+      <section class="grid">${cards}</section>
+      <section class="notice">
+        <h2>Source policy</h2>
+        <p>This site does not claim ownership of the historical domain and does not use old-domain redirects. Each article was rewritten from verified Wayback CDX evidence.</p>
+      </section>`,
+  });
+}
+
+function renderArticle(article, articles) {
+  const related = articles
+    .filter((item) => item.slug !== article.slug)
+    .map((item) => `<li><a href="/${item.slug}/">${escapeHtml(item.title)}</a></li>`)
+    .join("");
+
+  return layout({
+    title: `${article.title} · ${site.title}`,
+    description: `${article.topic} note rebuilt in public recovery mode.`,
+    body: `
+      <article class="article">
+        ${article.body}
+        <aside class="source">
+          <h2>Archive Evidence</h2>
+          <p><strong>Evidence tier:</strong> ${escapeHtml(article.evidence_tier)}</p>
+          <p><strong>Historical source path:</strong> <code>${escapeHtml(article.source_path)}</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="${escapeHtml(article.wayback_snapshot)}" rel="nofollow noopener">${escapeHtml(article.wayback_snapshot)}</a></p>
+        </aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul>${related}</ul>
+      </nav>`,
+  });
+}
+
+function layout({ title, description, body }) {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(description)}">
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>No old-domain redirects · Public recovery</span>
+    </header>
+    <main>${body}</main>
+    <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
+  </div>
+</body>
+</html>`;
+}
+
+function renderSitemap(articles) {
+  const urls = ["/", ...articles.map((article) => `/${article.slug}/`)]
+    .map((url) => `  <url><loc>${site.baseUrl}${url}</loc></url>`)
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls}
+</urlset>
+`;
+}
+
+function normalizeBaseUrl(value) {
+  return String(value).replace(/\/+$/, "");
+}

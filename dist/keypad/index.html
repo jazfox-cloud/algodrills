@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>算法面试：如何求解数字键盘的字母组合问题 · Algorithm Notes</title>
+  <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>No old-domain redirects · Public recovery</span>
+    </header>
+    <main>
+      <article class="article">
+        <h1>算法面试：如何求解数字键盘的字母组合问题</h1>
+<p>在经典的技术面试中，将数字映射到特定字符集，并求解所有可能的字母组合，是一个考察递归与回溯基础的高频题。</p>
+<h2>问题本质</h2>
+<p>给定一个仅包含数字 <code>2-9</code> 的字符串，输出该数字序列能够组成的所有字母组合。数字到字母的映射关系与标准电话按键一致，例如 <code>2</code> 对应 <code>a</code>、<code>b</code>、<code>c</code>，<code>3</code> 对应 <code>d</code>、<code>e</code>、<code>f</code>。</p>
+<h2>核心解题思路：回溯算法</h2>
+<p>组合长度由输入数字的个数决定，每一位数字又对应多个分支选择。这天然适合使用深度优先搜索与回溯。</p>
+<h2>算法步骤</h2>
+<ul><li>构建映射表，将字符 <code>2</code> 到 <code>9</code> 与对应字母字符串绑定。</li><li>使用一个指针记录当前处理到的数字下标。</li><li>当指针到达输入字符串末尾时，将当前组合写入结果集。</li><li>对当前数字的每个候选字母，先加入路径，再递归处理下一位。</li><li>递归返回后移除最后一个字母，继续尝试下一个候选字母。</li></ul>
+<h2>复杂度分析</h2>
+<p>时间复杂度为 <code>O(4^N * N)</code>，其中 <code>N</code> 是输入字符串长度。某些数字如 <code>7</code> 和 <code>9</code> 对应 4 个字母，因此最坏情况下分支数会快速增长。</p>
+<p>空间复杂度为 <code>O(N)</code>，主要来自递归调用栈和当前路径。</p>
+        <aside class="source">
+          <h2>Archive Evidence</h2>
+          <p><strong>Evidence tier:</strong> Gold</p>
+          <p><strong>Historical source path:</strong> <code>/blog/2014/11/28/keypad</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20150212075129/http://www.interviewbits.com:80/blog/2014/11/28/keypad" rel="nofollow noopener">https://web.archive.org/web/20150212075129/http://www.interviewbits.com:80/blog/2014/11/28/keypad</a></p>
+        </aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul><li><a href="/square-root/">实战算法：如何在不调用库函数的情况下高效求解平方根</a></li><li><a href="/power-set/">集合算法：高效生成幂集的两种技术实现</a></li></ul>
+      </nav></main>
+    <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
+  </div>
+</body>
+</html>

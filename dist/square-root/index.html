@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>实战算法：如何在不调用库函数的情况下高效求解平方根 · Algorithm Notes</title>
+  <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>No old-domain redirects · Public recovery</span>
+    </header>
+    <main>
+      <article class="article">
+        <h1>实战算法：如何在不调用库函数的情况下高效求解平方根</h1>
+<p>在工程开发和底层计算中，不依赖语言内置的 <code>Math.sqrt()</code> 来实现开方，是检验数学直觉、边界处理和数值稳定性的常见题目。</p>
+<h2>方案一：二分查找</h2>
+<p>如果要寻找正整数 <code>N</code> 的算术平方根整数部分，也就是 <code>floor(sqrt(N))</code>，可以将答案锁定在 <code>[0, N]</code> 区间内。因为平方函数在非负区间单调递增，二分查找是直接且稳定的选择。</p>
+<h2>执行细节</h2>
+<ul><li>设置低边界 <code>low = 0</code>，高边界 <code>high = N</code>。</li><li>每轮计算中点 <code>mid = low + (high - low) / 2</code>。</li><li>比较 <code>mid * mid</code> 与 <code>N</code> 的关系。</li><li>如果 <code>mid * mid == N</code>，直接返回 <code>mid</code>。</li><li>如果 <code>mid * mid &lt; N</code>，说明答案在右侧，移动低边界，并记录当前候选答案。</li><li>如果 <code>mid * mid &gt; N</code>，说明答案在左侧，移动高边界。</li></ul>
+<p>实际编码时要注意整型溢出。可以用 <code>mid == N / mid</code> 或 <code>mid &lt;= N / mid</code> 代替直接计算 <code>mid * mid</code>。</p>
+<h2>方案二：牛顿迭代</h2>
+<p>牛顿迭代通过切线逼近函数零点，收敛速度通常快于二分查找。对于方程 <code>f(x) = x^2 - N = 0</code>，迭代公式为：</p>
+<pre><code>x_next = 0.5 * (x + N / x)</code></pre>
+<p>选择 <code>N</code> 作为初始值，持续迭代，直到相邻两次结果差值小于指定精度，即可得到浮点近似解。</p>
+        <aside class="source">
+          <h2>Archive Evidence</h2>
+          <p><strong>Evidence tier:</strong> Gold</p>
+          <p><strong>Historical source path:</strong> <code>/blog/2014/11/29/square-root/</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20141228212350/http://www.interviewbits.com:80/blog/2014/11/29/square-root/" rel="nofollow noopener">https://web.archive.org/web/20141228212350/http://www.interviewbits.com:80/blog/2014/11/29/square-root/</a></p>
+        </aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul><li><a href="/keypad/">算法面试：如何求解数字键盘的字母组合问题</a></li><li><a href="/power-set/">集合算法：高效生成幂集的两种技术实现</a></li></ul>
+      </nav></main>
+    <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
+  </div>
+</body>
+</html>
