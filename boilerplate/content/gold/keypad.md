@@ -1,5 +1,5 @@
 ---
-title: "算法面试：如何求解数字键盘的字母组合问题"
+title: "Phone Keypad Letter Combinations: A Backtracking Interview Problem"
 source_url: "http://www.interviewbits.com:80/blog/2014/11/28/keypad"
 source_path: "/blog/2014/11/28/keypad"
 wayback_snapshot: "https://web.archive.org/web/20150212075129/http://www.interviewbits.com:80/blog/2014/11/28/keypad"
@@ -8,28 +8,45 @@ topic: "algorithm-interview"
 rewrite_status: "rewritten"
 ---
 
-# 算法面试：如何求解数字键盘的字母组合问题
+# Phone Keypad Letter Combinations: A Backtracking Interview Problem
 
-在经典的技术面试中，将数字映射到特定字符集，并求解所有可能的字母组合，是一个考察递归与回溯基础的高频题。
+Mapping digits to letters and generating every possible combination is a classic interview problem. It tests whether you can model a branching search space, maintain recursive state, and produce results without losing or duplicating paths.
 
-## 问题本质
+## Problem
 
-给定一个仅包含数字 `2-9` 的字符串，输出该数字序列能够组成的所有字母组合。数字到字母的映射关系与标准电话按键一致，例如 `2` 对应 `a`、`b`、`c`，`3` 对应 `d`、`e`、`f`。
+Given a string containing only digits from `2` to `9`, return all letter combinations that the number could represent. The mapping follows a traditional phone keypad:
 
-## 核心解题思路：回溯算法
+- `2` maps to `a`, `b`, `c`
+- `3` maps to `d`, `e`, `f`
+- `7` maps to `p`, `q`, `r`, `s`
+- `9` maps to `w`, `x`, `y`, `z`
 
-组合长度由输入数字的个数决定，每一位数字又对应多个分支选择。这天然适合使用深度优先搜索与回溯。
+For example, the input `23` should produce combinations such as `ad`, `ae`, `af`, `bd`, and so on.
 
-## 算法步骤
+## Core Idea: Backtracking
 
-- 构建映射表，将字符 `2` 到 `9` 与对应字母字符串绑定。
-- 使用一个指针记录当前处理到的数字下标。
-- 当指针到达输入字符串末尾时，将当前组合写入结果集。
-- 对当前数字的每个候选字母，先加入路径，再递归处理下一位。
-- 递归返回后移除最后一个字母，继续尝试下一个候选字母。
+Each digit creates a set of choices. The final output is built by choosing one letter for each digit in order. That makes the problem a natural fit for depth-first search.
 
-## 复杂度分析
+Track two pieces of state:
 
-时间复杂度为 `O(4^N * N)`，其中 `N` 是输入字符串长度。某些数字如 `7` 和 `9` 对应 4 个字母，因此最坏情况下分支数会快速增长。
+- The current index in the input string.
+- The current partial combination.
 
-空间复杂度为 `O(N)`，主要来自递归调用栈和当前路径。
+When the index reaches the end of the input, the partial combination is complete and can be added to the result list.
+
+## Algorithm Steps
+
+- Build a lookup table from each digit to its possible letters.
+- Start a recursive search at index `0`.
+- For the current digit, iterate through each mapped letter.
+- Append one letter to the current path.
+- Recurse into the next digit.
+- Remove the last letter after returning, so the next branch starts from the correct state.
+
+## Complexity
+
+Let `N` be the number of input digits. In the worst case, every digit maps to four letters, so the number of combinations is `4^N`.
+
+The time complexity is `O(4^N * N)` because each complete combination has length `N`.
+
+The auxiliary space complexity is `O(N)` for the recursion stack and current path, excluding the output list.

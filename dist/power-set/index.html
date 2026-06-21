@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>集合算法：高效生成幂集的两种技术实现 · Algorithm Notes</title>
+  <title>Power Set Generation: Two Practical Interview Approaches · Algorithm Notes</title>
   <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
   <style>
     :root {
@@ -50,18 +50,22 @@
     </header>
     <main>
       <article class="article">
-        <h1>集合算法：高效生成幂集的两种技术实现</h1>
-<p>幂集是一个给定集合的所有子集构成的集合，包含空集和集合本身。若原集合有 <code>N</code> 个元素，则幂集大小为 <code>2^N</code>。</p>
-<p>在算法面试中，不重复、不遗漏地生成所有子集，是评估结构化思维和递归建模能力的基础题。</p>
-<h2>方法一：二进制位掩码</h2>
-<p>每个元素在子集中只有两种状态：出现或不出现。这正好对应二进制中的 <code>1</code> 和 <code>0</code>。</p>
-<h2>实现逻辑</h2>
-<ul><li>集合大小为 <code>N</code>，子集总数为 <code>1 &lt;&lt; N</code>。</li><li>使用从 <code>0</code> 到 <code>2^N - 1</code> 的整数作为子集编码。</li><li>对每个编码，检查第 <code>j</code> 位是否为 <code>1</code>。</li><li>如果第 <code>j</code> 位为 <code>1</code>，就把原集合中下标为 <code>j</code> 的元素加入当前子集。</li></ul>
-<p>这种方法结构紧凑，不需要递归，适合元素数量较少的场景。</p>
-<h2>方法二：回溯生成</h2>
-<p>回溯法把问题建模为一棵决策树。每一层递归都决定一个元素是否进入当前子集。</p>
-<ul><li>分支一：选择当前元素，然后继续处理下一个元素。</li><li>分支二：不选择当前元素，直接继续处理下一个元素。</li><li>当递归深度等于集合长度时，将当前路径复制到结果集中。</li></ul>
-<p>回溯法更容易扩展到包含剪枝、去重或约束条件的子集问题。</p>
+        <h1>Power Set Generation: Two Practical Interview Approaches</h1>
+<p>A power set is the set of all subsets of a given set. It includes the empty set and the original set itself. If the input has <code>N</code> elements, the power set contains <code>2^N</code> subsets.</p>
+<p>Generating every subset without duplicates or omissions is a common interview problem because it tests your ability to model choices cleanly.</p>
+<h2>Approach 1: Bit Masking</h2>
+<p>Each element has exactly two states in a subset: included or excluded. That maps naturally to binary digits.</p>
+<p>For an input array of length <code>N</code>, every integer from <code>0</code> to <code>2^N - 1</code> can represent one subset. If the <code>j</code>-th bit of the number is <code>1</code>, include the <code>j</code>-th input element. If it is <code>0</code>, leave that element out.</p>
+<h2>Bit Masking Steps</h2>
+<ul><li>Let <code>total = 1 &lt;&lt; N</code>.</li><li>Iterate <code>mask</code> from <code>0</code> to <code>total - 1</code>.</li><li>For each bit position <code>j</code>, check whether <code>mask &amp; (1 &lt;&lt; j)</code> is non-zero.</li><li>If the bit is set, add <code>nums[j]</code> to the current subset.</li><li>Append the completed subset to the result list.</li></ul>
+<p>This approach is compact and avoids recursion. It is especially convenient when the input size is small enough that <code>2^N</code> subsets can fit in memory.</p>
+<h2>Approach 2: Backtracking</h2>
+<p>Backtracking models subset generation as a decision tree. At each element, make one of two choices:</p>
+<ul><li>Include the current element.</li><li>Exclude the current element.</li></ul>
+<p>When the recursion index reaches the end of the array, copy the current path into the result list.</p>
+<h2>Choosing Between Them</h2>
+<p>Bit masking is concise and iterative. Backtracking is often easier to extend when the problem adds constraints, duplicate handling, pruning, or ordering requirements.</p>
+<p>Both approaches have the same output size, so both require <code>O(2^N * N)</code> time in the general case.</p>
         <aside class="source">
           <h2>Archive Evidence</h2>
           <p><strong>Evidence tier:</strong> Gold</p>
@@ -71,7 +75,7 @@
       </article>
       <nav class="related">
         <h2>More Notes</h2>
-        <ul><li><a href="/square-root/">实战算法：如何在不调用库函数的情况下高效求解平方根</a></li><li><a href="/keypad/">算法面试：如何求解数字键盘的字母组合问题</a></li></ul>
+        <ul><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li></ul>
       </nav></main>
     <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
   </div>

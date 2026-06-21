@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>算法面试：如何求解数字键盘的字母组合问题 · Algorithm Notes</title>
+  <title>Phone Keypad Letter Combinations: A Backtracking Interview Problem · Algorithm Notes</title>
   <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
   <style>
     :root {
@@ -50,17 +50,23 @@
     </header>
     <main>
       <article class="article">
-        <h1>算法面试：如何求解数字键盘的字母组合问题</h1>
-<p>在经典的技术面试中，将数字映射到特定字符集，并求解所有可能的字母组合，是一个考察递归与回溯基础的高频题。</p>
-<h2>问题本质</h2>
-<p>给定一个仅包含数字 <code>2-9</code> 的字符串，输出该数字序列能够组成的所有字母组合。数字到字母的映射关系与标准电话按键一致，例如 <code>2</code> 对应 <code>a</code>、<code>b</code>、<code>c</code>，<code>3</code> 对应 <code>d</code>、<code>e</code>、<code>f</code>。</p>
-<h2>核心解题思路：回溯算法</h2>
-<p>组合长度由输入数字的个数决定，每一位数字又对应多个分支选择。这天然适合使用深度优先搜索与回溯。</p>
-<h2>算法步骤</h2>
-<ul><li>构建映射表，将字符 <code>2</code> 到 <code>9</code> 与对应字母字符串绑定。</li><li>使用一个指针记录当前处理到的数字下标。</li><li>当指针到达输入字符串末尾时，将当前组合写入结果集。</li><li>对当前数字的每个候选字母，先加入路径，再递归处理下一位。</li><li>递归返回后移除最后一个字母，继续尝试下一个候选字母。</li></ul>
-<h2>复杂度分析</h2>
-<p>时间复杂度为 <code>O(4^N * N)</code>，其中 <code>N</code> 是输入字符串长度。某些数字如 <code>7</code> 和 <code>9</code> 对应 4 个字母，因此最坏情况下分支数会快速增长。</p>
-<p>空间复杂度为 <code>O(N)</code>，主要来自递归调用栈和当前路径。</p>
+        <h1>Phone Keypad Letter Combinations: A Backtracking Interview Problem</h1>
+<p>Mapping digits to letters and generating every possible combination is a classic interview problem. It tests whether you can model a branching search space, maintain recursive state, and produce results without losing or duplicating paths.</p>
+<h2>Problem</h2>
+<p>Given a string containing only digits from <code>2</code> to <code>9</code>, return all letter combinations that the number could represent. The mapping follows a traditional phone keypad:</p>
+<ul><li><code>2</code> maps to <code>a</code>, <code>b</code>, <code>c</code></li><li><code>3</code> maps to <code>d</code>, <code>e</code>, <code>f</code></li><li><code>7</code> maps to <code>p</code>, <code>q</code>, <code>r</code>, <code>s</code></li><li><code>9</code> maps to <code>w</code>, <code>x</code>, <code>y</code>, <code>z</code></li></ul>
+<p>For example, the input <code>23</code> should produce combinations such as <code>ad</code>, <code>ae</code>, <code>af</code>, <code>bd</code>, and so on.</p>
+<h2>Core Idea: Backtracking</h2>
+<p>Each digit creates a set of choices. The final output is built by choosing one letter for each digit in order. That makes the problem a natural fit for depth-first search.</p>
+<p>Track two pieces of state:</p>
+<ul><li>The current index in the input string.</li><li>The current partial combination.</li></ul>
+<p>When the index reaches the end of the input, the partial combination is complete and can be added to the result list.</p>
+<h2>Algorithm Steps</h2>
+<ul><li>Build a lookup table from each digit to its possible letters.</li><li>Start a recursive search at index <code>0</code>.</li><li>For the current digit, iterate through each mapped letter.</li><li>Append one letter to the current path.</li><li>Recurse into the next digit.</li><li>Remove the last letter after returning, so the next branch starts from the correct state.</li></ul>
+<h2>Complexity</h2>
+<p>Let <code>N</code> be the number of input digits. In the worst case, every digit maps to four letters, so the number of combinations is <code>4^N</code>.</p>
+<p>The time complexity is <code>O(4^N * N)</code> because each complete combination has length <code>N</code>.</p>
+<p>The auxiliary space complexity is <code>O(N)</code> for the recursion stack and current path, excluding the output list.</p>
         <aside class="source">
           <h2>Archive Evidence</h2>
           <p><strong>Evidence tier:</strong> Gold</p>
@@ -70,7 +76,7 @@
       </article>
       <nav class="related">
         <h2>More Notes</h2>
-        <ul><li><a href="/square-root/">实战算法：如何在不调用库函数的情况下高效求解平方根</a></li><li><a href="/power-set/">集合算法：高效生成幂集的两种技术实现</a></li></ul>
+        <ul><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li></ul>
       </nav></main>
     <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
   </div>

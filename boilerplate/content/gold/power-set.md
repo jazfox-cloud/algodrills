@@ -1,5 +1,5 @@
 ---
-title: "集合算法：高效生成幂集的两种技术实现"
+title: "Power Set Generation: Two Practical Interview Approaches"
 source_url: "http://www.interviewbits.com:80/blog/2014/12/03/power-set/"
 source_path: "/blog/2014/12/03/power-set/"
 wayback_snapshot: "https://web.archive.org/web/20141228212413/http://www.interviewbits.com:80/blog/2014/12/03/power-set/"
@@ -8,31 +8,39 @@ topic: "algorithm-interview"
 rewrite_status: "rewritten"
 ---
 
-# 集合算法：高效生成幂集的两种技术实现
+# Power Set Generation: Two Practical Interview Approaches
 
-幂集是一个给定集合的所有子集构成的集合，包含空集和集合本身。若原集合有 `N` 个元素，则幂集大小为 `2^N`。
+A power set is the set of all subsets of a given set. It includes the empty set and the original set itself. If the input has `N` elements, the power set contains `2^N` subsets.
 
-在算法面试中，不重复、不遗漏地生成所有子集，是评估结构化思维和递归建模能力的基础题。
+Generating every subset without duplicates or omissions is a common interview problem because it tests your ability to model choices cleanly.
 
-## 方法一：二进制位掩码
+## Approach 1: Bit Masking
 
-每个元素在子集中只有两种状态：出现或不出现。这正好对应二进制中的 `1` 和 `0`。
+Each element has exactly two states in a subset: included or excluded. That maps naturally to binary digits.
 
-## 实现逻辑
+For an input array of length `N`, every integer from `0` to `2^N - 1` can represent one subset. If the `j`-th bit of the number is `1`, include the `j`-th input element. If it is `0`, leave that element out.
 
-- 集合大小为 `N`，子集总数为 `1 << N`。
-- 使用从 `0` 到 `2^N - 1` 的整数作为子集编码。
-- 对每个编码，检查第 `j` 位是否为 `1`。
-- 如果第 `j` 位为 `1`，就把原集合中下标为 `j` 的元素加入当前子集。
+## Bit Masking Steps
 
-这种方法结构紧凑，不需要递归，适合元素数量较少的场景。
+- Let `total = 1 << N`.
+- Iterate `mask` from `0` to `total - 1`.
+- For each bit position `j`, check whether `mask & (1 << j)` is non-zero.
+- If the bit is set, add `nums[j]` to the current subset.
+- Append the completed subset to the result list.
 
-## 方法二：回溯生成
+This approach is compact and avoids recursion. It is especially convenient when the input size is small enough that `2^N` subsets can fit in memory.
 
-回溯法把问题建模为一棵决策树。每一层递归都决定一个元素是否进入当前子集。
+## Approach 2: Backtracking
 
-- 分支一：选择当前元素，然后继续处理下一个元素。
-- 分支二：不选择当前元素，直接继续处理下一个元素。
-- 当递归深度等于集合长度时，将当前路径复制到结果集中。
+Backtracking models subset generation as a decision tree. At each element, make one of two choices:
 
-回溯法更容易扩展到包含剪枝、去重或约束条件的子集问题。
+- Include the current element.
+- Exclude the current element.
+
+When the recursion index reaches the end of the array, copy the current path into the result list.
+
+## Choosing Between Them
+
+Bit masking is concise and iterative. Backtracking is often easier to extend when the problem adds constraints, duplicate handling, pruning, or ordering requirements.
+
+Both approaches have the same output size, so both require `O(2^N * N)` time in the general case.

@@ -1,5 +1,5 @@
 ---
-title: "实战算法：如何在不调用库函数的情况下高效求解平方根"
+title: "How to Compute a Square Root Without Calling a Library Function"
 source_url: "http://www.interviewbits.com:80/blog/2014/11/29/square-root/"
 source_path: "/blog/2014/11/29/square-root/"
 wayback_snapshot: "https://web.archive.org/web/20141228212350/http://www.interviewbits.com:80/blog/2014/11/29/square-root/"
@@ -8,31 +8,36 @@ topic: "algorithm-interview"
 rewrite_status: "rewritten"
 ---
 
-# 实战算法：如何在不调用库函数的情况下高效求解平方根
+# How to Compute a Square Root Without Calling a Library Function
 
-在工程开发和底层计算中，不依赖语言内置的 `Math.sqrt()` 来实现开方，是检验数学直觉、边界处理和数值稳定性的常见题目。
+Implementing square root without calling a built-in function is a useful interview exercise because it combines numerical reasoning, boundary handling, and safe arithmetic. The problem usually appears in one of two forms: return the integer part of the square root, or compute a floating-point approximation to a chosen precision.
 
-## 方案一：二分查找
+## Approach 1: Binary Search
 
-如果要寻找正整数 `N` 的算术平方根整数部分，也就是 `floor(sqrt(N))`，可以将答案锁定在 `[0, N]` 区间内。因为平方函数在非负区间单调递增，二分查找是直接且稳定的选择。
+If the goal is to compute `floor(sqrt(N))` for a non-negative integer `N`, binary search is a direct and reliable approach. The answer must lie in a bounded interval, and the square function is monotonic on non-negative numbers.
 
-## 执行细节
+For `N >= 1`, the search interval can start as `[1, N]`. For each midpoint, compare `mid * mid` against `N` and move the search boundaries accordingly.
 
-- 设置低边界 `low = 0`，高边界 `high = N`。
-- 每轮计算中点 `mid = low + (high - low) / 2`。
-- 比较 `mid * mid` 与 `N` 的关系。
-- 如果 `mid * mid == N`，直接返回 `mid`。
-- 如果 `mid * mid < N`，说明答案在右侧，移动低边界，并记录当前候选答案。
-- 如果 `mid * mid > N`，说明答案在左侧，移动高边界。
+## Binary Search Details
 
-实际编码时要注意整型溢出。可以用 `mid == N / mid` 或 `mid <= N / mid` 代替直接计算 `mid * mid`。
+- Set `low = 0` and `high = N`.
+- Compute `mid = low + (high - low) / 2`.
+- If `mid * mid == N`, return `mid`.
+- If `mid * mid < N`, store `mid` as the current best answer and move right.
+- If `mid * mid > N`, move left.
 
-## 方案二：牛顿迭代
+One practical detail matters: `mid * mid` can overflow for large integers. A safer comparison is to use division, such as `mid <= N / mid`, instead of multiplying first.
 
-牛顿迭代通过切线逼近函数零点，收敛速度通常快于二分查找。对于方程 `f(x) = x^2 - N = 0`，迭代公式为：
+## Approach 2: Newton's Method
+
+Newton's method converges quickly by repeatedly improving an estimate. For the equation `x^2 - N = 0`, the update rule is:
 
 ```text
 x_next = 0.5 * (x + N / x)
 ```
 
-选择 `N` 作为初始值，持续迭代，直到相邻两次结果差值小于指定精度，即可得到浮点近似解。
+Start with a positive guess, often `N` itself for simple implementations, and repeat the update until the difference between two consecutive estimates is smaller than the required tolerance.
+
+## When to Use Each Approach
+
+Binary search is easier to reason about and works well for integer square roots. Newton's method is faster for floating-point approximations, but it requires careful handling of precision, zero, and stopping conditions.
