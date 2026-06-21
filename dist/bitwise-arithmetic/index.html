@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Power Set Generation: Two Practical Interview Approaches · Algorithm Notes</title>
+  <title>Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo · Algorithm Notes</title>
   <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
   <style>
     :root {
@@ -50,32 +50,40 @@
     </header>
     <main>
       <article class="article">
-        <h1>Power Set Generation: Two Practical Interview Approaches</h1>
-<p>A power set is the set of all subsets of a given set. It includes the empty set and the original set itself. If the input has <code>N</code> elements, the power set contains <code>2^N</code> subsets.</p>
-<p>Generating every subset without duplicates or omissions is a common interview problem because it tests your ability to model choices cleanly.</p>
-<h2>Approach 1: Bit Masking</h2>
-<p>Each element has exactly two states in a subset: included or excluded. That maps naturally to binary digits.</p>
-<p>For an input array of length <code>N</code>, every integer from <code>0</code> to <code>2^N - 1</code> can represent one subset. If the <code>j</code>-th bit of the number is <code>1</code>, include the <code>j</code>-th input element. If it is <code>0</code>, leave that element out.</p>
-<h2>Bit Masking Steps</h2>
-<ul><li>Let <code>total = 1 &lt;&lt; N</code>.</li><li>Iterate <code>mask</code> from <code>0</code> to <code>total - 1</code>.</li><li>For each bit position <code>j</code>, check whether <code>mask &amp; (1 &lt;&lt; j)</code> is non-zero.</li><li>If the bit is set, add <code>nums[j]</code> to the current subset.</li><li>Append the completed subset to the result list.</li></ul>
-<p>This approach is compact and avoids recursion. It is especially convenient when the input size is small enough that <code>2^N</code> subsets can fit in memory.</p>
-<h2>Approach 2: Backtracking</h2>
-<p>Backtracking models subset generation as a decision tree. At each element, make one of two choices:</p>
-<ul><li>Include the current element.</li><li>Exclude the current element.</li></ul>
-<p>When the recursion index reaches the end of the array, copy the current path into the result list.</p>
-<h2>Choosing Between Them</h2>
-<p>Bit masking is concise and iterative. Backtracking is often easier to extend when the problem adds constraints, duplicate handling, pruning, or ordering requirements.</p>
-<p>Both approaches have the same output size, so both require <code>O(2^N * N)</code> time in the general case.</p>
+        <h1>Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</h1>
+<p>Bitwise arithmetic questions test whether you understand how integers are represented and how simple operations can be expressed through shifts and masks. These questions are less about memorizing tricks and more about recognizing powers of two.</p>
+<h2>Multiplication by Powers of Two</h2>
+<p>Left shift is equivalent to multiplying by a power of two.</p>
+<pre><code>x &lt;&lt; k  ==  x * 2^k</code></pre>
+<p>For example:</p>
+<pre><code>5 &lt;&lt; 3 == 40</code></pre>
+<p>because shifting left by <code>3</code> multiplies by <code>8</code>.</p>
+<h2>Division by Powers of Two</h2>
+<p>Right shift is equivalent to integer division by a power of two for non-negative integers.</p>
+<pre><code>x &gt;&gt; k  ==  floor(x / 2^k)</code></pre>
+<p>For negative numbers, behavior can vary by language and signed-integer rules, so interview solutions should state the assumption clearly.</p>
+<h2>Modulo by Powers of Two</h2>
+<p>When the divisor is a power of two, modulo can be computed with a bit mask:</p>
+<pre><code>x % 2^k  ==  x &amp; (2^k - 1)</code></pre>
+<p>For example:</p>
+<pre><code>x % 8 == x &amp; 7</code></pre>
+<p>This works because <code>7</code> is binary <code>111</code>, which keeps only the lowest three bits.</p>
+<h2>Checking Whether a Number Is a Power of Two</h2>
+<p>A positive integer is a power of two if it has exactly one bit set.</p>
+<pre><code>x &gt; 0 &amp;&amp; (x &amp; (x - 1)) == 0</code></pre>
+<p>This expression clears the lowest set bit. If the result is zero, there was only one set bit to begin with.</p>
+<h2>Practical Notes</h2>
+<p>Bitwise replacements are useful in low-level code and interview reasoning, but readability matters. In production code, prefer clear arithmetic unless bitwise operations are required for performance, memory layout, or protocol work.</p>
         <aside class="source">
           <h2>Archive Evidence</h2>
           <p><strong>Evidence tier:</strong> Gold</p>
-          <p><strong>Historical source path:</strong> <code>/blog/2014/12/03/power-set/</code></p>
-          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20141228212413/http://www.interviewbits.com:80/blog/2014/12/03/power-set/" rel="nofollow noopener">https://web.archive.org/web/20141228212413/http://www.interviewbits.com:80/blog/2014/12/03/power-set/</a></p>
+          <p><strong>Historical source path:</strong> <code>/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20150212021013/http://www.interviewbits.com:80/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/" rel="nofollow noopener">https://web.archive.org/web/20150212021013/http://www.interviewbits.com:80/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/</a></p>
         </aside>
       </article>
       <nav class="related">
         <h2>More Notes</h2>
-        <ul><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/weighted-random/">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
+        <ul><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/weighted-random/">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
       </nav></main>
     <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
   </div>

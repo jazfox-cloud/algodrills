@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Power Set Generation: Two Practical Interview Approaches · Algorithm Notes</title>
+  <title>Weighted Random Selection: Picking Values by Distribution · Algorithm Notes</title>
   <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
   <style>
     :root {
@@ -50,32 +50,39 @@
     </header>
     <main>
       <article class="article">
-        <h1>Power Set Generation: Two Practical Interview Approaches</h1>
-<p>A power set is the set of all subsets of a given set. It includes the empty set and the original set itself. If the input has <code>N</code> elements, the power set contains <code>2^N</code> subsets.</p>
-<p>Generating every subset without duplicates or omissions is a common interview problem because it tests your ability to model choices cleanly.</p>
-<h2>Approach 1: Bit Masking</h2>
-<p>Each element has exactly two states in a subset: included or excluded. That maps naturally to binary digits.</p>
-<p>For an input array of length <code>N</code>, every integer from <code>0</code> to <code>2^N - 1</code> can represent one subset. If the <code>j</code>-th bit of the number is <code>1</code>, include the <code>j</code>-th input element. If it is <code>0</code>, leave that element out.</p>
-<h2>Bit Masking Steps</h2>
-<ul><li>Let <code>total = 1 &lt;&lt; N</code>.</li><li>Iterate <code>mask</code> from <code>0</code> to <code>total - 1</code>.</li><li>For each bit position <code>j</code>, check whether <code>mask &amp; (1 &lt;&lt; j)</code> is non-zero.</li><li>If the bit is set, add <code>nums[j]</code> to the current subset.</li><li>Append the completed subset to the result list.</li></ul>
-<p>This approach is compact and avoids recursion. It is especially convenient when the input size is small enough that <code>2^N</code> subsets can fit in memory.</p>
-<h2>Approach 2: Backtracking</h2>
-<p>Backtracking models subset generation as a decision tree. At each element, make one of two choices:</p>
-<ul><li>Include the current element.</li><li>Exclude the current element.</li></ul>
-<p>When the recursion index reaches the end of the array, copy the current path into the result list.</p>
-<h2>Choosing Between Them</h2>
-<p>Bit masking is concise and iterative. Backtracking is often easier to extend when the problem adds constraints, duplicate handling, pruning, or ordering requirements.</p>
-<p>Both approaches have the same output size, so both require <code>O(2^N * N)</code> time in the general case.</p>
+        <h1>Weighted Random Selection: Picking Values by Distribution</h1>
+<p>Weighted random selection appears in interview questions, ranking systems, simulations, games, and load balancing. The goal is to choose an item randomly, but not uniformly: items with higher weights should be selected more often.</p>
+<h2>Problem</h2>
+<p>Given items and positive weights, return one item at random according to the weight distribution.</p>
+<p>For example:</p>
+<pre><code>items   = [A, B, C]
+weights = [2, 3, 5]</code></pre>
+<p>The total weight is <code>10</code>, so <code>A</code> should be selected about 20% of the time, <code>B</code> about 30%, and <code>C</code> about 50%.</p>
+<h2>Core Idea: Prefix Sums</h2>
+<p>Convert the weights into cumulative ranges:</p>
+<pre><code>A: 1..2
+B: 3..5
+C: 6..10</code></pre>
+<p>Then generate a random number between <code>1</code> and the total weight. The range that contains that number determines the selected item.</p>
+<h2>Linear Scan Approach</h2>
+<ul><li>Build a running total of weights.</li><li>Generate a random integer from <code>1</code> to <code>totalWeight</code>.</li><li>Scan the prefix sums from left to right.</li><li>Return the first item whose prefix sum is greater than or equal to the random number.</li></ul>
+<p>This is simple and works well for small lists.</p>
+<h2>Binary Search Optimization</h2>
+<p>If selection happens many times, precompute the prefix sums once. Then use binary search to find the first prefix sum that is at least the random target.</p>
+<p>This changes each selection from <code>O(N)</code> to <code>O(log N)</code>.</p>
+<h2>Complexity</h2>
+<p>Building prefix sums takes <code>O(N)</code> time and space.</p>
+<p>Each selection takes <code>O(N)</code> with a linear scan or <code>O(log N)</code> with binary search.</p>
         <aside class="source">
           <h2>Archive Evidence</h2>
           <p><strong>Evidence tier:</strong> Gold</p>
-          <p><strong>Historical source path:</strong> <code>/blog/2014/12/03/power-set/</code></p>
-          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20141228212413/http://www.interviewbits.com:80/blog/2014/12/03/power-set/" rel="nofollow noopener">https://web.archive.org/web/20141228212413/http://www.interviewbits.com:80/blog/2014/12/03/power-set/</a></p>
+          <p><strong>Historical source path:</strong> <code>/blog/2014/12/11/random-number-with-distribution/</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20141228193243/http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/" rel="nofollow noopener">https://web.archive.org/web/20141228193243/http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/</a></p>
         </aside>
       </article>
       <nav class="related">
         <h2>More Notes</h2>
-        <ul><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/weighted-random/">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
+        <ul><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li></ul>
       </nav></main>
     <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
   </div>

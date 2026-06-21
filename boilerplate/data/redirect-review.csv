@@ -2,3 +2,6 @@ source_path,new_path,redirect_status,reason
 /blog/2014/11/28/keypad,/keypad/,not_applicable_no_old_domain_control,Public recovery mode; old-domain control is unverified
 /blog/2014/11/29/square-root/,/square-root/,not_applicable_no_old_domain_control,Public recovery mode; old-domain control is unverified
 /blog/2014/12/03/power-set/,/power-set/,not_applicable_no_old_domain_control,Public recovery mode; old-domain control is unverified
+/blog/2014/11/29/insert/,/insert-interval/,not_applicable_no_old_domain_control,Public recovery mode; old-domain control is unverified
+/blog/2014/12/11/random-number-with-distribution/,/weighted-random/,not_applicable_no_old_domain_control,Public recovery mode; old-domain control is unverified
+/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/,/bitwise-arithmetic/,not_applicable_no_old_domain_control,Public recovery mode; old-domain control is unverified
