@@ -37,6 +37,7 @@ Conclusion: recover only exact 2014-2015 `/blog/` CDX rows and do not claim old-
 | http://www.interviewbits.com:80/blog/2014/11/28/keypad | /blog/2014/11/28/keypad | Gold | yes | exact 200 text/html CDX row; classic algorithm-interview topic |
 | http://www.interviewbits.com:80/blog/2014/11/29/square-root/ | /blog/2014/11/29/square-root/ | Gold | yes | exact 200 text/html CDX row; classic algorithm-interview topic |
 | http://www.interviewbits.com:80/blog/2014/12/03/power-set/ | /blog/2014/12/03/power-set/ | Gold | yes | exact 200 text/html CDX row; classic algorithm-interview topic |
+| http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | /blog/2014/12/01/plus-minus-array/ | Gold | yes | exact 200 text/html CDX row; plus/minus array has clear algorithm-interview intent |
 
 ## Content Audit
 
@@ -45,6 +46,7 @@ Conclusion: recover only exact 2014-2015 `/blog/` CDX rows and do not claim old-
 | http://www.interviewbits.com:80/blog/2014/11/28/keypad | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2014/11/29/square-root/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2014/12/03/power-set/ | publish-ready | rewritten as independent educational content | no |
+| http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | publish-ready | rewritten as independent educational content | no |
 
 ## Gold Evidence
 
@@ -55,6 +57,7 @@ Record exact public-search queries or external evidence. If search evidence was 
 | http://www.interviewbits.com:80/blog/2014/11/28/keypad | CDX export row | 20150212075129, 200, text/html | high |
 | http://www.interviewbits.com:80/blog/2014/11/29/square-root/ | CDX export row | 20141228212350, 200, text/html | high |
 | http://www.interviewbits.com:80/blog/2014/12/03/power-set/ | CDX export row | 20141228212413, 200, text/html | high |
+| http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | CDX export row | 20141228212355, 200, text/html | high |
 
 ## Silver Evidence
 
@@ -62,7 +65,7 @@ Each Silver page needs at least two weaker signals.
 
 | URL | Signal 1 | Signal 2 | Other Notes |
 | --- | --- | --- | --- |
-| Deferred rows | exact CDX row | three-page run limit | seven pages remain in backlog |
+| Deferred rows | exact CDX row | three-page run limit | four pages remain in backlog |
 
 ## Skipped Pages
 
@@ -78,6 +81,7 @@ Each Silver page needs at least two weaker signals.
 | content/gold/keypad.md | http://www.interviewbits.com:80/blog/2014/11/28/keypad | https://web.archive.org/web/20150212075129/http://www.interviewbits.com:80/blog/2014/11/28/keypad | Gold | /keypad/ |
 | content/gold/square-root.md | http://www.interviewbits.com:80/blog/2014/11/29/square-root/ | https://web.archive.org/web/20141228212350/http://www.interviewbits.com:80/blog/2014/11/29/square-root/ | Gold | /square-root/ |
 | content/gold/power-set.md | http://www.interviewbits.com:80/blog/2014/12/03/power-set/ | https://web.archive.org/web/20141228212413/http://www.interviewbits.com:80/blog/2014/12/03/power-set/ | Gold | /power-set/ |
+| content/gold/plus-minus-array.md | http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | https://web.archive.org/web/20141228212355/http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | Gold | /plus-minus-array/ |
 
 ## Risks and Compliance Notes
 
@@ -89,4 +93,4 @@ Each Silver page needs at least two weaker signals.
 
 ## Backlog
 
-Seven exact CDX rows remain in `data/backlog.csv` for a later batch.
+Four exact CDX rows remain in `data/backlog.csv` for a later batch.
