@@ -2,8 +2,10 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://algodrills.com/</loc></url>
   <url><loc>https://algodrills.com/bitwise-arithmetic/</loc></url>
+  <url><loc>https://algodrills.com/celebrities/</loc></url>
   <url><loc>https://algodrills.com/square-root/</loc></url>
   <url><loc>https://algodrills.com/insert-interval/</loc></url>
+  <url><loc>https://algodrills.com/log-every-second/</loc></url>
   <url><loc>https://algodrills.com/keypad/</loc></url>
   <url><loc>https://algodrills.com/plus-minus-array/</loc></url>
   <url><loc>https://algodrills.com/power-set/</loc></url>

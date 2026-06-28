@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Celebrity Problem: Elimination Strategy for a Directed Knows Graph · Algorithm Notes</title>
+  <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>No old-domain redirects · Public recovery</span>
+    </header>
+    <main>
+      <article class="article">
+        <h1>Celebrity Problem: Elimination Strategy for a Directed Knows Graph</h1>
+<p>The celebrity problem is a common interview question because it looks social on the surface but reduces to a clean elimination algorithm. You are given a group of people and a function <code>knows(a, b)</code> that tells whether person <code>a</code> knows person <code>b</code>.</p>
+<p>A celebrity, if one exists, has two properties:</p>
+<ul><li>Everyone knows the celebrity.</li><li>The celebrity knows nobody else.</li></ul>
+<p>The task is to identify the celebrity using as few relationship checks as possible.</p>
+<h2>Naive Approach</h2>
+<p>The direct approach checks every person against every other person.</p>
+<p>For each candidate <code>c</code>:</p>
+<ul><li>Verify that every other person knows <code>c</code>.</li><li>Verify that <code>c</code> does not know any other person.</li></ul>
+<p>This works, but it costs <code>O(N^2)</code> checks.</p>
+<h2>Key Elimination Insight</h2>
+<p>You can rule people out one comparison at a time.</p>
+<p>Suppose you compare <code>a</code> and <code>b</code>:</p>
+<ul><li>If <code>a</code> knows <code>b</code>, then <code>a</code> cannot be the celebrity.</li><li>If <code>a</code> does not know <code>b</code>, then <code>b</code> cannot be the celebrity.</li></ul>
+<p>Either way, one person is eliminated immediately.</p>
+<h2>Linear Candidate Selection</h2>
+<p>Start with candidate <code>0</code>. Scan through the group from left to right:</p>
+<ul><li>If the current candidate knows person <code>i</code>, replace the candidate with <code>i</code>.</li><li>Otherwise keep the current candidate.</li></ul>
+<p>After one pass, only one possible celebrity remains.</p>
+<p>This pass does not prove the candidate is a celebrity. It only finds the only person who still could be one.</p>
+<h2>Verification Pass</h2>
+<p>Once the candidate is chosen, run a second pass to verify both celebrity conditions:</p>
+<ul><li>Every other person must know the candidate.</li><li>The candidate must not know any other person.</li></ul>
+<p>If either condition fails, there is no celebrity.</p>
+<h2>Complexity</h2>
+<p>The elimination pass takes <code>O(N)</code> checks.</p>
+<p>The verification pass also takes <code>O(N)</code> checks.</p>
+<p>So the overall time complexity is <code>O(N)</code>, with <code>O(1)</code> extra space.</p>
+<h2>Why Interviewers Like It</h2>
+<p>This problem tests whether you can replace brute force with invariant-based reasoning. The important step is recognizing that each comparison can permanently discard one candidate, which turns a quadratic search into a linear one.</p>
+        <aside class="source">
+          <h2>Archive Evidence</h2>
+          <p><strong>Evidence tier:</strong> Gold</p>
+          <p><strong>Historical source path:</strong> <code>/blog/2014/12/15/celebrities/</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20141228193310/http://www.interviewbits.com:80/blog/2014/12/15/celebrities/" rel="nofollow noopener">https://web.archive.org/web/20141228193310/http://www.interviewbits.com:80/blog/2014/12/15/celebrities/</a></p>
+        </aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/log-every-second/">Log Every Second: Scheduling Repeated Output Without Blocking</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/plus-minus-array/">Plus Minus Array: Reordering Positive and Negative Values</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/weighted-random/">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
+      </nav></main>
+    <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log Every Second: Scheduling Repeated Output Without Blocking · Algorithm Notes</title>
+  <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>No old-domain redirects · Public recovery</span>
+    </header>
+    <main>
+      <article class="article">
+        <h1>Log Every Second: Scheduling Repeated Output Without Blocking</h1>
+<p>Questions about logging output every second are really questions about scheduling. The interviewer is not only checking whether you can print values in order, but whether you understand the difference between blocking a thread and handing work to a timer.</p>
+<h2>Problem</h2>
+<p>Given a sequence of values, print one item every second until the sequence is exhausted.</p>
+<p>Common interview variants include:</p>
+<ul><li>print numbers from <code>1</code> to <code>N</code></li><li>print the contents of an array one element per second</li><li>stop cleanly after the last value</li><li>explain how the solution changes in a single-threaded event loop</li></ul>
+<p>The useful skill here is separating the repeated action from the scheduling mechanism.</p>
+<h2>Straightforward Timer-Based Approach</h2>
+<p>If the language provides timers, the clearest solution is usually:</p>
+<p>1. keep an index for the next item to print 2. schedule a repeating callback once per second 3. print the current item inside the callback 4. advance the index 5. cancel the timer after the final item</p>
+<p>In pseudocode:</p>
+<pre><code>index = 0
+start repeating timer every 1 second:
+  print(values[index])
+  index += 1
+  if index == values.length:
+    stop timer</code></pre>
+<p>This approach is easy to explain and avoids busy waiting.</p>
+<h2>Why Busy Waiting Is Wrong</h2>
+<p>A weak solution uses a loop that repeatedly checks the clock until one second has passed. That wastes CPU time and blocks other work.</p>
+<p>Interviewers usually want you to say that:</p>
+<ul><li>busy waiting is inefficient</li><li>it prevents concurrent work on the same thread</li><li>timer APIs or sleep primitives are a better fit</li></ul>
+<p>If the environment is event-driven, blocking the main thread is especially harmful because it delays every other callback.</p>
+<h2>Recursive Timeout Variant</h2>
+<p>Some candidates prefer a self-scheduling function instead of a fixed interval timer.</p>
+<p>That pattern looks like this:</p>
+<p>1. print the current item 2. schedule the next call one second later 3. stop when there are no items left</p>
+<p>This variant is nice because the delay to the next run starts only after the current callback finishes, which avoids overlap if the callback work is not constant.</p>
+<h2>Edge Cases</h2>
+<ul><li>Empty input: print nothing and exit immediately</li><li>One element: print once and stop</li><li>Large <code>N</code>: avoid recursion that grows the call stack synchronously</li><li>Slow callback work: prefer self-scheduling timeouts if overlap would be a problem</li></ul>
+<h2>Complexity</h2>
+<p>The algorithm prints each item once, so the total work is <code>O(N)</code>.</p>
+<p>Extra space is <code>O(1)</code> beyond the input storage.</p>
+<p>Wall-clock time is about <code>N</code> seconds because the problem requires spacing each output by one second.</p>
+<h2>Interview Follow-Ups</h2>
+<p>The common follow-up questions are:</p>
+<ul><li>How would you cancel the process early?</li><li>What happens if the callback takes longer than one second?</li><li>How would you implement the same idea with threads and <code>sleep</code>?</li><li>How do closures affect the captured loop variable?</li></ul>
+<p>A strong answer focuses on correctness first, then explains the runtime model clearly.</p>
+        <aside class="source">
+          <h2>Archive Evidence</h2>
+          <p><strong>Evidence tier:</strong> Gold</p>
+          <p><strong>Historical source path:</strong> <code>/blog/2014/12/02/log-every-second/</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20141228212406/http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/" rel="nofollow noopener">https://web.archive.org/web/20141228212406/http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/</a></p>
+        </aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/celebrities/">Celebrity Problem: Elimination Strategy for a Directed Knows Graph</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/plus-minus-array/">Plus Minus Array: Reordering Positive and Negative Values</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/weighted-random/">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
+      </nav></main>
+    <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
+  </div>
+</body>
+</html>
