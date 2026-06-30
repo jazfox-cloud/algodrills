@@ -11,7 +11,7 @@ npm run build
 If you already know the production domain, set `SITE_URL` so `sitemap.xml` contains the final canonical host:
 
 ```bash
-SITE_URL=https://your-domain.com npm run build
+SITE_URL=https://www.algodrills.com npm run build
 ```
 
 The static site is generated into:

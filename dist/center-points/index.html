@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Center Points: Midpoints and Geometric Centers in Interview Problems · Algorithm Notes</title>
+  <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>No old-domain redirects · Public recovery</span>
+    </header>
+    <main>
+      <article class="article">
+        <h1>Center Points: Midpoints and Geometric Centers in Interview Problems</h1>
+<p>Questions about center points usually belong to the geometry side of interview prep. The title alone does not lock the problem to one exact task, so the safest way to prepare is to understand the common interpretations that interviewers use when they ask for the center of points.</p>
+<h2>Problem</h2>
+<p>Given points in one or more dimensions, compute a point that represents the center under a clearly defined rule.</p>
+<p>The first thing to clarify is which definition of center the interviewer wants. Common variants include:</p>
+<ul><li>the midpoint between two points</li><li>the centroid of many points</li><li>the center of an axis-aligned bounding box</li><li>the point that minimizes total distance under a specific metric</li></ul>
+<p>Different definitions lead to different formulas, so a strong answer starts by asking for precision before coding.</p>
+<h2>Variant 1: Midpoint of Two Points</h2>
+<p>If the task gives exactly two points, the center is usually the midpoint.</p>
+<p>For points <code>(x1, y1)</code> and <code>(x2, y2)</code>, the midpoint is:</p>
+<pre><code>((x1 + x2) / 2, (y1 + y2) / 2)</code></pre>
+<p>In higher dimensions, apply the same idea coordinate by coordinate.</p>
+<p>This runs in <code>O(1)</code> time and uses <code>O(1)</code> extra space.</p>
+<h2>Variant 2: Centroid of Many Points</h2>
+<p>If the input contains many points and the interviewer wants the geometric center, they often mean the centroid.</p>
+<p>For points:</p>
+<pre><code>(x1, y1), (x2, y2), ..., (xn, yn)</code></pre>
+<p>compute:</p>
+<pre><code>centroid_x = (x1 + x2 + ... + xn) / n
+centroid_y = (y1 + y2 + ... + yn) / n</code></pre>
+<p>This is just an average of each coordinate, so it can be computed in one pass over the input.</p>
+<h2>Variant 3: Center of a Bounding Box</h2>
+<p>Sometimes the question is really about enclosing points rather than averaging them.</p>
+<p>In that case:</p>
+<p>1. find <code>minX</code>, <code>maxX</code>, <code>minY</code>, and <code>maxY</code> 2. return <code>((minX + maxX) / 2, (minY + maxY) / 2)</code></p>
+<p>This gives the center of the axis-aligned box that contains all points. It is useful when outliers matter for shape coverage but you do not want to average every coordinate.</p>
+<h2>Clarify the Distance Model</h2>
+<p>Another hidden ambiguity is the distance function.</p>
+<ul><li>Under squared Euclidean distance, the centroid is the natural center.</li><li>Under Manhattan distance in one dimension, the median is often the better center.</li><li>If the task requires a center chosen from the input points, the answer may be different again.</li></ul>
+<p>That is why the best interview answer is not only a formula, but also a short clarification about what &quot;center&quot; means in the problem statement.</p>
+<h2>Numerical and Edge Cases</h2>
+<ul><li>Empty input should usually return an error or a null result.</li><li>One point is its own center.</li><li>Integer coordinates may produce fractional centers.</li><li>Large coordinates can overflow fixed-width integer arithmetic if you sum before casting.</li></ul>
+<p>When precision matters, use floating-point output or a rational representation if the interviewer asks for exactness.</p>
+<h2>Complexity</h2>
+<p>Midpoint of two points runs in <code>O(1)</code> time.</p>
+<p>Centroid and bounding-box center for <code>N</code> points both run in <code>O(N)</code> time with <code>O(1)</code> extra space.</p>
+<h2>Interview Follow-Up</h2>
+<p>Good follow-up questions include:</p>
+<ul><li>Do we need the exact geometric center or just a representative point?</li><li>Can the answer be outside the original set of points?</li><li>Are coordinates integers, floats, or very large values?</li><li>Which distance metric defines the best center?</li></ul>
+<p>The main skill is not memorizing one formula. It is recognizing that &quot;center point&quot; is underspecified until you tie it to a concrete geometric rule.</p>
+        <aside class="source">
+          <h2>Archive Evidence</h2>
+          <p><strong>Evidence tier:</strong> Silver</p>
+          <p><strong>Historical source path:</strong> <code>/blog/2015/02/02/center-points/</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20150212021106/http://www.interviewbits.com:80/blog/2015/02/02/center-points/" rel="nofollow noopener">https://web.archive.org/web/20150212021106/http://www.interviewbits.com:80/blog/2015/02/02/center-points/</a></p>
+        </aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/celebrities/">Celebrity Problem: Elimination Strategy for a Directed Knows Graph</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/log-every-second/">Log Every Second: Scheduling Repeated Output Without Blocking</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/plus-minus-array/">Plus Minus Array: Reordering Positive and Negative Values</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/weighted-random/">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
+      </nav></main>
+    <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
+  </div>
+</body>
+</html>

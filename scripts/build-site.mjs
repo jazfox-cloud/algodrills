@@ -9,7 +9,7 @@ const distDir = path.join(root, "dist");
 const site = {
   title: "Algorithm Notes",
   description: "Independent algorithm interview notes rebuilt from verified historical archive evidence.",
-  baseUrl: normalizeBaseUrl(process.env.SITE_URL || "https://example.com"),
+  baseUrl: normalizeBaseUrl(process.env.SITE_URL || "https://www.algodrills.com"),
 };
 
 await main().catch((error) => {

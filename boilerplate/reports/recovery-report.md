@@ -40,6 +40,7 @@ Conclusion: recover only exact 2014-2015 `/blog/` CDX rows and do not claim old-
 | http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | /blog/2014/12/01/plus-minus-array/ | Gold | yes | exact 200 text/html CDX row; plus/minus array has clear algorithm-interview intent |
 | http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | /blog/2014/12/02/log-every-second/ | Gold | yes | exact 200 text/html CDX row; timer scheduling has clear algorithm-interview intent |
 | http://www.interviewbits.com:80/blog/2014/12/15/celebrities/ | /blog/2014/12/15/celebrities/ | Gold | yes | exact 200 text/html CDX row; celebrity elimination has clear algorithm-interview intent |
+| http://www.interviewbits.com:80/blog/2015/02/02/center-points/ | /blog/2015/02/02/center-points/ | Silver | yes | exact 200 text/html CDX row; promoted from backlog for geometric center interview coverage |
 
 ## Content Audit
 
@@ -51,6 +52,7 @@ Conclusion: recover only exact 2014-2015 `/blog/` CDX rows and do not claim old-
 | http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2014/12/15/celebrities/ | publish-ready | rewritten as independent educational content | no |
+| http://www.interviewbits.com:80/blog/2015/02/02/center-points/ | publish-ready | rewritten as independent educational content | no |
 
 ## Gold Evidence
 
@@ -71,7 +73,7 @@ Each Silver page needs at least two weaker signals.
 
 | URL | Signal 1 | Signal 2 | Other Notes |
 | --- | --- | --- | --- |
-| http://www.interviewbits.com:80/blog/2015/02/02/center-points/ | exact CDX row | deferred by recovery batch limit | one page remains in backlog |
+| http://www.interviewbits.com:80/blog/2015/02/02/center-points/ | exact CDX row | promoted from backlog after batch limit cleared | selected for rewrite |
 
 ## Skipped Pages
 
@@ -90,6 +92,7 @@ Each Silver page needs at least two weaker signals.
 | content/gold/plus-minus-array.md | http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | https://web.archive.org/web/20141228212355/http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | Gold | /plus-minus-array/ |
 | content/gold/log-every-second.md | http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | https://web.archive.org/web/20141228212406/http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | Gold | /log-every-second/ |
 | content/gold/celebrities.md | http://www.interviewbits.com:80/blog/2014/12/15/celebrities/ | https://web.archive.org/web/20141228193310/http://www.interviewbits.com:80/blog/2014/12/15/celebrities/ | Gold | /celebrities/ |
+| content/gold/center-points.md | http://www.interviewbits.com:80/blog/2015/02/02/center-points/ | https://web.archive.org/web/20150212021106/http://www.interviewbits.com:80/blog/2015/02/02/center-points/ | Silver | /center-points/ |
 
 ## Risks and Compliance Notes
 
@@ -101,4 +104,4 @@ Each Silver page needs at least two weaker signals.
 
 ## Backlog
 
-One exact CDX row remains in `data/backlog.csv` for a later batch.
+No exact CDX rows remain in `data/backlog.csv` after promoting `center-points`.
