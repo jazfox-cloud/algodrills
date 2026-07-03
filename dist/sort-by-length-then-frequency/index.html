@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sort Words by Length and Frequency · Algorithm Notes</title>
+  <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>No old-domain redirects · Public recovery</span>
+    </header>
+    <main>
+      <article class="article">
+        <h1>Sort Words by Length and Frequency</h1>
+<p>This interview problem combines counting with custom sorting. You are given a list of words that may contain duplicates, and you need to return each distinct word exactly once, ordered by two rules.</p>
+<h2>Problem</h2>
+<p>Given an unordered list of words, return the distinct words sorted:</p>
+<ul><li>first by word length in descending order</li><li>then by occurrence count in descending order</li></ul>
+<p>For example:</p>
+<pre><code>[ABC, ABC, ABB, ABCDE, A, B, B, B]</code></pre>
+<p>should become:</p>
+<pre><code>[ABCDE, ABC, ABB, B, A]</code></pre>
+<p>The longest word comes first. Among words of the same length, the one that appears more often comes first.</p>
+<h2>Core Idea</h2>
+<p>Treat the task as two separate steps:</p>
+<p>1. count how many times each word appears 2. sort the distinct words with the required comparator</p>
+<p>That separation keeps the implementation straightforward and makes the ordering rule explicit.</p>
+<h2>Step 1: Count Occurrences</h2>
+<p>Use a hash map from word to frequency.</p>
+<p>After scanning the input once, you know:</p>
+<ul><li>which words are distinct</li><li>how often each one appears</li></ul>
+<p>If the input has <code>N</code> words and <code>K</code> distinct words, this pass is <code>O(N)</code>.</p>
+<h2>Step 2: Sort Distinct Words</h2>
+<p>Now sort only the <code>K</code> distinct words. The comparator should:</p>
+<ul><li>prefer longer words</li><li>if lengths are equal, prefer larger frequencies</li></ul>
+<p>If the interviewer asks what happens when both length and frequency are equal, clarify the tie-break rule. A deterministic implementation can fall back to lexicographic order or first appearance, but that part is not required unless the prompt says so.</p>
+<h2>Example Walkthrough</h2>
+<p>Input:</p>
+<pre><code>[ABC, ABC, ABB, ABCDE, A, B, B, B]</code></pre>
+<p>Frequencies:</p>
+<pre><code>ABCDE -&gt; 1
+ABC   -&gt; 2
+ABB   -&gt; 1
+B     -&gt; 3
+A     -&gt; 1</code></pre>
+<p>Sort by length descending:</p>
+<ul><li><code>ABCDE</code> has length <code>5</code></li><li><code>ABC</code> and <code>ABB</code> have length <code>3</code></li><li><code>B</code> and <code>A</code> have length <code>1</code></li></ul>
+<p>Then break ties by frequency:</p>
+<ul><li><code>ABC</code> comes before <code>ABB</code></li><li><code>B</code> comes before <code>A</code></li></ul>
+<p>Final answer:</p>
+<pre><code>[ABCDE, ABC, ABB, B, A]</code></pre>
+<h2>Reference Approach</h2>
+<p>Pseudo-code:</p>
+<pre><code>count = empty map
+for word in words:
+    count[word] += 1
+
+distinct = keys(count)
+sort distinct by:
+    1. length descending
+    2. count descending
+
+return distinct</code></pre>
+<h2>Complexity</h2>
+<ul><li>Counting frequencies: <code>O(N)</code></li><li>Sorting distinct words: <code>O(K log K)</code></li><li>Extra space: <code>O(K)</code></li></ul>
+<p>This is usually the intended solution because the expensive sort is applied only to the distinct words, not to the full input.</p>
+<h2>Interview Follow-Up</h2>
+<p>Useful clarifications include:</p>
+<ul><li>Should ties be broken alphabetically or by original appearance?</li><li>Are comparisons case-sensitive?</li><li>Can the input contain empty strings?</li><li>Do we need the final list only, or also the frequencies?</li></ul>
+<p>The main skill here is recognizing that the problem is not about repeated pairwise comparison. It is about aggregating first, then sorting by a composite key.</p>
+        <aside class="source">
+          <h2>Archive Evidence</h2>
+          <p><strong>Evidence tier:</strong> Gold</p>
+          <p><strong>Historical source path:</strong> <code>/blog/2014/12/03/sort-by-length-then-frequency/</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20141228193235/http://www.interviewbits.com:80/blog/2014/12/03/sort-by-length-then-frequency/" rel="nofollow noopener">https://web.archive.org/web/20141228193235/http://www.interviewbits.com:80/blog/2014/12/03/sort-by-length-then-frequency/</a></p>
+        </aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/celebrities/">Celebrity Problem: Elimination Strategy for a Directed Knows Graph</a></li><li><a href="/center-points/">Center Points: Midpoints and Geometric Centers in Interview Problems</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/log-every-second/">Log Every Second: Scheduling Repeated Output Without Blocking</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/plus-minus-array/">Plus Minus Array: Reordering Positive and Negative Values</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/weighted-random/">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
+      </nav></main>
+    <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
+  </div>
+</body>
+</html>
