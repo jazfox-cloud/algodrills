@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rectangles Store: Fast Point Queries Over Overlapping Rectangles · Algorithm Notes</title>
+  <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>No old-domain redirects · Public recovery</span>
+    </header>
+    <main>
+      <article class="article">
+        <h1>Rectangles Store: Fast Point Queries Over Overlapping Rectangles</h1>
+<p>This problem asks you to design a rectangle lookup structure that is efficient both in memory and query time. That combination is what makes it a good interview question: you cannot get away with either a brute-force scan or a giant point-by-point grid.</p>
+<h2>Problem</h2>
+<p>You are given:</p>
+<ul><li>one large bounding rectangle</li><li>many rectangles contained inside that bounding rectangle</li></ul>
+<p>You need to support two operations:</p>
+<p>1. initialize the data structure from the bounding box and the rectangle collection 2. answer <code>findRectangleAt(x, y)</code> by returning the topmost rectangle that contains the point, or <code>null</code> if none does</p>
+<p>The tricky part is the scale. The input may contain many rectangles, and the bounding box may be extremely large.</p>
+<h2>Why the Obvious Solutions Fail</h2>
+<p>Two simple ideas are ruled out:</p>
+<ul><li>Storing the rectangles in a plain list makes each query too slow because you may need to scan every rectangle.</li><li>Mapping every point in the bounding box to a rectangle uses far too much memory when coordinates are large.</li></ul>
+<p>So the real task is to index rectangle boundaries in a way that narrows the candidate set quickly.</p>
+<h2>Core Idea</h2>
+<p>A point <code>(x, y)</code> lies inside a rectangle exactly when all four of these conditions hold:</p>
+<ul><li><code>left &lt;= x</code></li><li><code>right &gt;= x</code></li><li><code>top &lt;= y</code></li><li><code>bottom &gt;= y</code></li></ul>
+<p>That means we can index rectangle edges rather than every covered point.</p>
+<p>One clean approach is to maintain four sorted collections:</p>
+<ul><li>rectangle left edges</li><li>rectangle right edges</li><li>rectangle top edges</li><li>rectangle bottom edges</li></ul>
+<p>Each entry stores both the edge value and the rectangle id.</p>
+<h2>Query Strategy</h2>
+<p>For a query point <code>(x, y)</code>, compute four candidate sets:</p>
+<ul><li>rectangles whose left edge is at or before <code>x</code></li><li>rectangles whose right edge is at or after <code>x</code></li><li>rectangles whose top edge is at or above <code>y</code></li><li>rectangles whose bottom edge is at or below <code>y</code></li></ul>
+<p>Any rectangle containing <code>(x, y)</code> must appear in all four sets.</p>
+<p>So the answer is the first rectangle id that appears in every set, using the ordering rule that matches &quot;topmost&quot; in the problem definition.</p>
+<h2>Why This Works</h2>
+<p>Instead of asking every rectangle whether it contains the point, we first rule out most rectangles using sorted boundary indexes.</p>
+<p>That gives us:</p>
+<ul><li>good memory behavior because we store only rectangle boundaries</li><li>faster point queries because each filter removes impossible candidates early</li></ul>
+<p>The exact implementation can use balanced trees, sorted arrays with binary search, or interval-oriented structures. What matters in an interview is the reduction from geometric containment to four one-dimensional filters.</p>
+<h2>Complexity Discussion</h2>
+<p>If there are <code>N</code> rectangles:</p>
+<ul><li>initialization is roughly <code>O(N log N)</code> if you insert all four edges into sorted structures</li><li>query time depends on how the candidate intersections are implemented</li></ul>
+<p>The archived solution uses sorted sets plus list intersection checks. That is conceptually sound, though there is still room to improve the query path with more specialized indexing if the interviewer wants stronger asymptotics.</p>
+<h2>Edge Cases</h2>
+<ul><li>A query point may be outside the bounding box.</li><li>Multiple rectangles may overlap the same point.</li><li>Rectangles may share edges.</li><li>The topmost rectangle rule needs a deterministic interpretation.</li></ul>
+<p>Clarifying that last point is important. If &quot;topmost&quot; means smallest top coordinate, highest z-index, or most recently inserted rectangle, the data structure may need different tie-breaking.</p>
+<h2>Interview Follow-Up</h2>
+<p>Good follow-up questions include:</p>
+<ul><li>How many queries will we run after initialization?</li><li>Are rectangles static, or do insertions and deletions happen later?</li><li>What exactly defines the topmost rectangle?</li><li>Do we need worst-case guarantees or just practical speed?</li></ul>
+<p>The strongest answer is not just &quot;use a TreeSet.&quot; It is showing that point containment can be decomposed into four ordered constraints and that a sparse index is better than a dense grid for large coordinate spaces.</p>
+        <aside class="source">
+          <h2>Archive Evidence</h2>
+          <p><strong>Evidence tier:</strong> Gold</p>
+          <p><strong>Historical source path:</strong> <code>/blog/2014/12/18/rectangles-store/</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20141228193350/http://www.interviewbits.com:80/blog/2014/12/18/rectangles-store/" rel="nofollow noopener">https://web.archive.org/web/20141228193350/http://www.interviewbits.com:80/blog/2014/12/18/rectangles-store/</a></p>
+        </aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/celebrities/">Celebrity Problem: Elimination Strategy for a Directed Knows Graph</a></li><li><a href="/center-points/">Center Points: Midpoints and Geometric Centers in Interview Problems</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/log-every-second/">Log Every Second: Scheduling Repeated Output Without Blocking</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/plus-minus-array/">Plus Minus Array: Reordering Positive and Negative Values</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/sort-by-length-then-frequency/">Sort Words by Length and Frequency</a></li><li><a href="/weighted-random/">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
+      </nav></main>
+    <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
+  </div>
+</body>
+</html>

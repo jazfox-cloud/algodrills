@@ -44,7 +44,7 @@ Conclusion: recover only exact 2014-2015 `/blog/` CDX rows and do not claim old-
 | http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | /blog/2014/12/02/log-every-second/ | Gold | yes | exact 200 text/html CDX row; timer scheduling has clear algorithm-interview intent |
 | http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/ | /blog/2014/12/11/random-number-with-distribution/ | Gold | yes | exact 200 text/html CDX row; weighted random selection has clear algorithm-interview intent |
 | http://www.interviewbits.com:80/blog/2014/12/15/celebrities/ | /blog/2014/12/15/celebrities/ | Gold | yes | exact 200 text/html CDX row; celebrity elimination has clear algorithm-interview intent |
-| http://www.interviewbits.com:80/blog/2014/12/18/rectangles-store/ | /blog/2014/12/18/rectangles-store/ | Gold | no | exact 200 text/html CDX row; archived title and description clearly describe a rectangle storage problem |
+| http://www.interviewbits.com:80/blog/2014/12/18/rectangles-store/ | /blog/2014/12/18/rectangles-store/ | Gold | yes | exact 200 text/html CDX row; archived title and description clearly describe a rectangle storage problem |
 | http://www.interviewbits.com:80/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/ | /blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/ | Gold | yes | exact 200 text/html CDX row; bitwise arithmetic has clear algorithm-interview intent |
 | http://www.interviewbits.com:80/blog/2015/02/02/center-points/ | /blog/2015/02/02/center-points/ | Silver | yes | exact 200 text/html CDX row; promoted from backlog for geometric center interview coverage |
 
@@ -62,7 +62,7 @@ Conclusion: recover only exact 2014-2015 `/blog/` CDX rows and do not claim old-
 | http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2014/12/15/celebrities/ | publish-ready | rewritten as independent educational content | no |
-| http://www.interviewbits.com:80/blog/2014/12/18/rectangles-store/ | needs_review | exact CDX row is verified, but the page has not been rewritten yet | yes |
+| http://www.interviewbits.com:80/blog/2014/12/18/rectangles-store/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2015/02/02/center-points/ | publish-ready | rewritten as independent educational content | no |
 
@@ -113,6 +113,7 @@ Each Silver page needs at least two weaker signals.
 | content/gold/log-every-second.md | http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | https://web.archive.org/web/20141228212406/http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | Gold | /log-every-second/ |
 | content/gold/weighted-random.md | http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/ | https://web.archive.org/web/20141228193243/http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/ | Gold | /weighted-random/ |
 | content/gold/celebrities.md | http://www.interviewbits.com:80/blog/2014/12/15/celebrities/ | https://web.archive.org/web/20141228193310/http://www.interviewbits.com:80/blog/2014/12/15/celebrities/ | Gold | /celebrities/ |
+| content/gold/rectangles-store.md | http://www.interviewbits.com:80/blog/2014/12/18/rectangles-store/ | https://web.archive.org/web/20141228193350/http://www.interviewbits.com:80/blog/2014/12/18/rectangles-store/ | Gold | /rectangles-store/ |
 | content/gold/bitwise-arithmetic.md | http://www.interviewbits.com:80/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/ | https://web.archive.org/web/20150212021013/http://www.interviewbits.com:80/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/ | Gold | /bitwise-arithmetic/ |
 | content/gold/center-points.md | http://www.interviewbits.com:80/blog/2015/02/02/center-points/ | https://web.archive.org/web/20150212021106/http://www.interviewbits.com:80/blog/2015/02/02/center-points/ | Silver | /center-points/ |
 
@@ -122,8 +123,8 @@ Each Silver page needs at least two weaker signals.
 - Outdated factual claims: low; content is algorithmic and evergreen.
 - Brand/person/legal/medical/financial sensitivity: low.
 - Old-domain redirect eligibility: not eligible; old-domain control is unverified.
-- Pages requiring manual review: `car_race` and `rectangles-store` remain in backlog.
+- Pages requiring manual review: `car_race` remains in backlog.
 
 ## Backlog
 
-Two exact CDX rows remain in `data/backlog.csv` after publishing `sort-by-length-then-frequency`: `car_race` and `rectangles-store`.
+One exact CDX row remains in `data/backlog.csv` after publishing `rectangles-store`: `car_race`.
