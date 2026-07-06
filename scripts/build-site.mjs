@@ -25,7 +25,7 @@ async function main() {
   articles.sort((a, b) => a.title.localeCompare(b.title));
 
   await writeFile(path.join(distDir, "index.html"), renderIndex(articles));
-  await writeFile(path.join(distDir, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n");
+  await writeFile(path.join(distDir, "robots.txt"), renderRobots());
   await writeFile(path.join(distDir, "sitemap.xml"), renderSitemap(articles));
 
   for (const article of articles) {
@@ -173,6 +173,7 @@ function renderIndex(articles) {
   return layout({
     title: site.title,
     description: site.description,
+    canonicalPath: "/",
     body: `
       <section class="hero">
         <p class="eyebrow">Public recovery mode</p>
@@ -196,6 +197,7 @@ function renderArticle(article, articles) {
   return layout({
     title: `${article.title} · ${site.title}`,
     description: `${article.topic} note rebuilt in public recovery mode.`,
+    canonicalPath: `/${article.slug}/`,
     body: `
       <article class="article">
         ${article.body}
@@ -213,7 +215,9 @@ function renderArticle(article, articles) {
   });
 }
 
-function layout({ title, description, body }) {
+function layout({ title, description, canonicalPath, body }) {
+  const canonicalUrl = `${site.baseUrl}${canonicalPath}`;
+
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -221,6 +225,11 @@ function layout({ title, description, body }) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
+  <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(description)}">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
   <style>
     :root {
       color-scheme: light;
@@ -269,6 +278,13 @@ function layout({ title, description, body }) {
   </div>
 </body>
 </html>`;
+}
+
+function renderRobots() {
+  return `User-agent: *
+Allow: /
+Sitemap: ${site.baseUrl}/sitemap.xml
+`;
 }
 
 function renderSitemap(articles) {
