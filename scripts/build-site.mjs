@@ -299,5 +299,10 @@ ${urls}
 }
 
 function normalizeBaseUrl(value) {
-  return String(value).replace(/\/+$/, "");
+  const parsed = new URL(String(value).replace(/\/+$/, ""));
+  parsed.protocol = "https:";
+  if (parsed.hostname === "algodrills.com") {
+    parsed.hostname = "www.algodrills.com";
+  }
+  return parsed.toString().replace(/\/+$/, "");
 }
