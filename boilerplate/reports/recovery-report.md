@@ -39,7 +39,7 @@ Conclusion: recover only exact 2014-2015 `/blog/` CDX rows and do not claim old-
 | http://www.interviewbits.com:80/blog/2014/11/29/insert/ | /blog/2014/11/29/insert/ | Gold | yes | exact 200 text/html CDX row; interval insertion has clear algorithm-interview intent |
 | http://www.interviewbits.com:80/blog/2014/12/03/power-set/ | /blog/2014/12/03/power-set/ | Gold | yes | exact 200 text/html CDX row; classic algorithm-interview topic |
 | http://www.interviewbits.com:80/blog/2014/12/03/sort-by-length-then-frequency/ | /blog/2014/12/03/sort-by-length-then-frequency/ | Gold | yes | exact 200 text/html CDX row; archived title and question clearly describe composite word sorting |
-| http://www.interviewbits.com:80/blog/2014/12/03/car_race/ | /blog/2014/12/03/car_race/ | Gold | no | exact 200 text/html CDX row; archived title and description clearly describe a linear-track race problem |
+| http://www.interviewbits.com:80/blog/2014/12/03/car_race/ | /blog/2014/12/03/car_race/ | Gold | yes | exact 200 text/html CDX row; archived title and description clearly describe a linear-track race problem |
 | http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | /blog/2014/12/01/plus-minus-array/ | Gold | yes | exact 200 text/html CDX row; plus/minus array has clear algorithm-interview intent |
 | http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | /blog/2014/12/02/log-every-second/ | Gold | yes | exact 200 text/html CDX row; timer scheduling has clear algorithm-interview intent |
 | http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/ | /blog/2014/12/11/random-number-with-distribution/ | Gold | yes | exact 200 text/html CDX row; weighted random selection has clear algorithm-interview intent |
@@ -57,7 +57,7 @@ Conclusion: recover only exact 2014-2015 `/blog/` CDX rows and do not claim old-
 | http://www.interviewbits.com:80/blog/2014/11/29/insert/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2014/12/03/power-set/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2014/12/03/sort-by-length-then-frequency/ | publish-ready | rewritten as independent educational content | no |
-| http://www.interviewbits.com:80/blog/2014/12/03/car_race/ | needs_review | exact CDX row is verified, but the page has not been rewritten yet | yes |
+| http://www.interviewbits.com:80/blog/2014/12/03/car_race/ | publish-ready | rewritten as independent educational content using the archived linear-track leaderboard prompt | no |
 | http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | publish-ready | rewritten as independent educational content | no |
 | http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/ | publish-ready | rewritten as independent educational content | no |
@@ -108,6 +108,7 @@ Each Silver page needs at least two weaker signals.
 | content/gold/square-root.md | http://www.interviewbits.com:80/blog/2014/11/29/square-root/ | https://web.archive.org/web/20141228212350/http://www.interviewbits.com:80/blog/2014/11/29/square-root/ | Gold | /square-root/ |
 | content/gold/insert-interval.md | http://www.interviewbits.com:80/blog/2014/11/29/insert/ | https://web.archive.org/web/20141228212345/http://www.interviewbits.com:80/blog/2014/11/29/insert/ | Gold | /insert-interval/ |
 | content/gold/power-set.md | http://www.interviewbits.com:80/blog/2014/12/03/power-set/ | https://web.archive.org/web/20141228212413/http://www.interviewbits.com:80/blog/2014/12/03/power-set/ | Gold | /power-set/ |
+| content/gold/car-race.md | http://www.interviewbits.com:80/blog/2014/12/03/car_race/ | https://web.archive.org/web/20141228193216/http://www.interviewbits.com:80/blog/2014/12/03/car_race/ | Gold | /car-race/ |
 | content/gold/sort-by-length-then-frequency.md | http://www.interviewbits.com:80/blog/2014/12/03/sort-by-length-then-frequency/ | https://web.archive.org/web/20141228193235/http://www.interviewbits.com:80/blog/2014/12/03/sort-by-length-then-frequency/ | Gold | /sort-by-length-then-frequency/ |
 | content/gold/plus-minus-array.md | http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | https://web.archive.org/web/20141228212355/http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/ | Gold | /plus-minus-array/ |
 | content/gold/log-every-second.md | http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | https://web.archive.org/web/20141228212406/http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/ | Gold | /log-every-second/ |
@@ -123,8 +124,8 @@ Each Silver page needs at least two weaker signals.
 - Outdated factual claims: low; content is algorithmic and evergreen.
 - Brand/person/legal/medical/financial sensitivity: low.
 - Old-domain redirect eligibility: not eligible; old-domain control is unverified.
-- Pages requiring manual review: `car_race` remains in backlog.
+- Pages requiring manual review: none in the current exact-CDX set.
 
 ## Backlog
 
-One exact CDX row remains in `data/backlog.csv` after publishing `rectangles-store`: `car_race`.
+No exact CDX backlog rows remain after publishing `car_race`.

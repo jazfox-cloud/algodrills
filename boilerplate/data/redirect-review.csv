@@ -6,3 +6,4 @@ source_path,new_path,redirect_status,reason
 /blog/2014/12/18/rectangles-store/,/rectangles-store/,not_applicable_no_old_domain_control,Public recovery mode; old-domain control is unverified
 /blog/2014/12/11/random-number-with-distribution/,/weighted-random/,not_applicable_no_old_domain_control,Public recovery mode; old-domain control is unverified
 /blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/,/bitwise-arithmetic/,not_applicable_no_old_domain_control,Public recovery mode; old-domain control is unverified
+/blog/2014/12/03/car_race/,/car-race/,not_applicable_no_old_domain_control,Public recovery mode; old-domain control is unverified

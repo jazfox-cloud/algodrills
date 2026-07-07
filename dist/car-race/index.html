@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Car Race Leaderboard: Tracking the Fastest Car on a Linear Track · Algorithm Notes</title>
+  <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
+  <link rel="canonical" href="https://www.algodrills.com/car-race/">
+  <meta property="og:title" content="Car Race Leaderboard: Tracking the Fastest Car on a Linear Track · Algorithm Notes">
+  <meta property="og:description" content="algorithm-interview note rebuilt in public recovery mode.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.algodrills.com/car-race/">
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>No old-domain redirects · Public recovery</span>
+    </header>
+    <main>
+      <article class="article">
+        <h1>Car Race Leaderboard: Tracking the Fastest Car on a Linear Track</h1>
+<p>This interview problem combines event processing with ordered ranking. The archived page described a race on a straight track where cars receive speed updates over time, and the system needs to identify the current winner as the race evolves.</p>
+<h2>Problem</h2>
+<p>You manage a set of cars moving on a one-dimensional track.</p>
+<p>The interface exposes an operation like:</p>
+<pre><code>update(car_id, speed)</code></pre>
+<p>Each update changes the current speed of one car. After processing updates, the system should be able to determine which car is winning and notify a callback when the leader changes.</p>
+<p>That sounds simple until you think about scale:</p>
+<ul><li>updates may arrive frequently</li><li>many cars may be active at once</li><li>the leader can change often</li></ul>
+<p>The real interview question is how to maintain the ranking efficiently without rescanning every car after each event.</p>
+<h2>What State Do You Need?</h2>
+<p>At minimum, track two things:</p>
+<ul><li>the latest speed for each <code>car_id</code></li><li>a structure that can tell you which car currently has the best race position</li></ul>
+<p>If the problem treats higher speed as &quot;ahead right now,&quot; then a max-oriented structure over speeds is enough. If it models elapsed time and accumulated distance, then each car also needs enough information to compute its current position when queried.</p>
+<p>Because the archived description focused on a winner callback tied to updates, the useful preparation angle is the incremental-ranking design rather than one specific physics model.</p>
+<h2>Baseline Solution</h2>
+<p>The brute-force design is:</p>
+<ul><li>store the latest speed for every car in a hash map</li><li>on every <code>update</code>, rewrite that car's speed</li><li>scan all cars to find the maximum</li></ul>
+<p>This is easy to implement but too slow when the number of updates is large. If there are <code>N</code> cars, each update becomes <code>O(N)</code>.</p>
+<h2>Better Approach: Ordered Leader Tracking</h2>
+<p>A stronger solution keeps cars in an ordered structure keyed by the value that defines &quot;leading.&quot;</p>
+<p>Examples include:</p>
+<ul><li>a balanced tree keyed by <code>(score, car_id)</code></li><li>a max-heap with lazy deletion</li><li>a sorted set if the language provides one</li></ul>
+<p>Then each <code>update(car_id, speed)</code> works like this:</p>
+<ul><li>remove the old ranking record for that car, if it exists</li><li>write the new speed into the hash map</li><li>insert the updated ranking record</li><li>compare the new maximum with the previous leader</li><li>trigger the callback only if the leader actually changed</li></ul>
+<p>This turns repeated full scans into efficient incremental maintenance.</p>
+<h2>Why a Hash Map Alone Is Not Enough</h2>
+<p>A hash map is excellent for locating a car by id, but it does not preserve ordering. You still need a second structure for &quot;who is first right now?&quot;</p>
+<p>That separation is a common interview pattern:</p>
+<ul><li>hash map for direct access</li><li>heap or tree for ordered queries</li></ul>
+<p>Once you recognize that split, the design becomes much cleaner.</p>
+<h2>Handling Ties</h2>
+<p>Interviews often hide complexity in tie behavior. Ask clarifying questions such as:</p>
+<ul><li>If two cars have the same speed, which one wins?</li><li>Does earlier arrival break the tie?</li><li>Should the callback fire if the leader id stays the same but another car matches it?</li></ul>
+<p>A deterministic rule like <code>(speed desc, car_id asc)</code> is usually enough unless the interviewer defines something else.</p>
+<h2>If Distance Matters</h2>
+<p>Some variants care about actual position rather than just instantaneous speed. In that version, a car's distance depends on:</p>
+<ul><li>its last known speed</li><li>the time since its previous update</li></ul>
+<p>Then each <code>update</code> must first advance that car's accumulated distance before changing speed. The ordered key becomes current distance, not just speed.</p>
+<p>That follow-up is valuable because it shows you can extend the data model instead of hardcoding the simplest interpretation.</p>
+<h2>Complexity</h2>
+<p>With a hash map plus an ordered structure:</p>
+<ul><li>lookup/update by id is <code>O(log N)</code> if removal and reinsertion are needed</li><li>leader query is <code>O(1)</code> or <code>O(log N)</code>, depending on the structure</li><li>memory usage is <code>O(N)</code></li></ul>
+<p>That is a clear improvement over rescanning the entire field after every speed change.</p>
+<h2>What the Interviewer Is Really Testing</h2>
+<p>This problem is less about racing and more about maintaining a dynamic maximum under frequent updates.</p>
+<p>The key ideas are:</p>
+<ul><li>separate identity lookup from ranking lookup</li><li>update only the affected record</li><li>fire downstream notifications only on meaningful state changes</li></ul>
+<p>If you explain the brute-force method first and then evolve it into a map-plus-ordered-structure design, you will usually cover both correctness and scalability well.</p>
+        <aside class="source">
+          <h2>Archive Evidence</h2>
+          <p><strong>Evidence tier:</strong> Gold</p>
+          <p><strong>Historical source path:</strong> <code>/blog/2014/12/03/car_race/</code></p>
+          <p><strong>Wayback snapshot:</strong> <a href="https://web.archive.org/web/20141228193216/http://www.interviewbits.com:80/blog/2014/12/03/car_race/" rel="nofollow noopener">https://web.archive.org/web/20141228193216/http://www.interviewbits.com:80/blog/2014/12/03/car_race/</a></p>
+        </aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/celebrities/">Celebrity Problem: Elimination Strategy for a Directed Knows Graph</a></li><li><a href="/center-points/">Center Points: Midpoints and Geometric Centers in Interview Problems</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/log-every-second/">Log Every Second: Scheduling Repeated Output Without Blocking</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/plus-minus-array/">Plus Minus Array: Reordering Positive and Negative Values</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/rectangles-store/">Rectangles Store: Fast Point Queries Over Overlapping Rectangles</a></li><li><a href="/sort-by-length-then-frequency/">Sort Words by Length and Frequency</a></li><li><a href="/weighted-random/">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
+      </nav></main>
+    <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
+  </div>
+</body>
+</html>
