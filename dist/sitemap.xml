@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://algodrills.com/</loc></url>
+  <url><loc>https://algodrills.com/about/</loc></url>
+  <url><loc>https://algodrills.com/contact/</loc></url>
+  <url><loc>https://algodrills.com/privacy/</loc></url>
+  <url><loc>https://algodrills.com/terms/</loc></url>
   <url><loc>https://algodrills.com/bitwise-arithmetic/</loc></url>
   <url><loc>https://algodrills.com/car-race/</loc></url>
   <url><loc>https://algodrills.com/celebrities/</loc></url>

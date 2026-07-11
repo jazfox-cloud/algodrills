@@ -28,6 +28,12 @@ async function main() {
   await writeFile(path.join(distDir, "robots.txt"), renderRobots());
   await writeFile(path.join(distDir, "sitemap.xml"), renderSitemap(articles));
 
+  for (const page of policyPages()) {
+    const dir = path.join(distDir, page.slug);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, "index.html"), renderPolicyPage(page));
+  }
+
   for (const article of articles) {
     const dir = path.join(distDir, article.slug);
     await mkdir(dir, { recursive: true });
@@ -215,6 +221,39 @@ function renderArticle(article, articles) {
   });
 }
 
+function policyPages() {
+  return [
+    {
+      slug: "about",
+      title: "About Algorithm Notes",
+      description: "About Algorithm Notes, its archive evidence, editorial process, and independent status.",
+      body: `<h1>About Algorithm Notes</h1><p>Algorithm Notes is an independent educational reference rebuilt from verified historical archive evidence. It turns recoverable interview-problem topics into newly written explanations rather than copying archived pages.</p><h2>Editorial approach</h2><p>Each article identifies its evidence tier, historical source path, and Wayback snapshot. The archive proves that a topic existed; the published explanation, examples, and structure are independently rewritten and manually reviewed.</p><h2>Independent status</h2><p>This site does not claim ownership of the historical domain or affiliation with the companies, interview platforms, or archives mentioned in source notes.</p>`
+    },
+    {
+      slug: "contact",
+      title: "Contact Algorithm Notes",
+      description: "Contact Algorithm Notes about corrections, archive evidence, privacy, or accessibility.",
+      body: `<h1>Contact Algorithm Notes</h1><p>Email <a href="mailto:hello@algodrills.com">hello@algodrills.com</a> for technical corrections, archive-source questions, privacy requests, or accessibility reports.</p><p>For a correction, include the page URL, the exact statement or code example to review, and a reliable technical reference. We do not provide personalized interview, hiring, or academic-assessment services.</p>`
+    },
+    {
+      slug: "privacy",
+      title: "Privacy Policy",
+      description: "Privacy policy for Algorithm Notes.",
+      body: `<h1>Privacy Policy</h1><p>Algorithm Notes does not require accounts or payments to read educational content. Hosting, analytics, and security providers may process IP addresses, browser or device information, requested pages, timestamps, and referral data to operate and protect the site.</p><h2>Advertising cookies</h2><p>Algorithm Notes may use third-party advertising services, including Google AdSense. Third-party vendors, including Google, may use cookies, web beacons, IP addresses, or similar identifiers to serve and measure ads based on a visitor's prior visits to this website or other websites.</p><p>You can control or opt out of personalized Google advertising through <a href="https://adssettings.google.com/">Google Ads Settings</a>. Additional industry opt-out choices are available at <a href="https://www.aboutads.info/choices/">aboutads.info</a>.</p><h2>Contact</h2><p>Privacy questions can be sent to <a href="mailto:hello@algodrills.com">hello@algodrills.com</a>.</p><p>Last updated July 11, 2026.</p>`
+    },
+    {
+      slug: "terms",
+      title: "Terms of Use",
+      description: "Terms governing use of Algorithm Notes educational content.",
+      body: `<h1>Terms of Use</h1><p>Last updated July 11, 2026.</p><h2>Educational use</h2><p>Algorithm Notes provides independent educational explanations and code examples. Content is not a guarantee of interview, hiring, academic, or production-software outcomes.</p><h2>Archive evidence</h2><p>Historical paths and Wayback links document topic provenance. They do not imply endorsement, ownership of a former domain, or permission to misrepresent archived material.</p><h2>Acceptable use</h2><p>Do not interfere with the site, use it to facilitate cheating or deception, or republish substantial portions of its editorial work as your own.</p><h2>Contact</h2><p>Questions can be sent to <a href="mailto:hello@algodrills.com">hello@algodrills.com</a>.</p>`
+    }
+  ];
+}
+
+function renderPolicyPage(page) {
+  return layout({ title: `${page.title} · ${site.title}`, description: page.description, canonicalPath: `/${page.slug}/`, body: `<article class="article">${page.body}</article>` });
+}
+
 function layout({ title, description, canonicalPath, body }) {
   const canonicalUrl = `${site.baseUrl}${canonicalPath}`;
 
@@ -274,7 +313,7 @@ function layout({ title, description, canonicalPath, body }) {
       <span>No old-domain redirects · Public recovery</span>
     </header>
     <main>${body}</main>
-    <footer>Independent educational notes rebuilt from verified archive evidence.</footer>
+    <footer>Independent educational notes rebuilt from verified archive evidence. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></footer>
   </div>
 </body>
 </html>`;
@@ -288,7 +327,7 @@ Sitemap: ${site.baseUrl}/sitemap.xml
 }
 
 function renderSitemap(articles) {
-  const urls = ["/", ...articles.map((article) => `/${article.slug}/`)]
+  const urls = ["/", ...policyPages().map((page) => `/${page.slug}/`), ...articles.map((article) => `/${article.slug}/`)]
     .map((url) => `  <url><loc>${site.baseUrl}${url}</loc></url>`)
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
