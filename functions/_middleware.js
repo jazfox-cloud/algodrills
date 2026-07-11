@@ -1,4 +1,4 @@
-const CANONICAL_HOST = "www.algodrills.com";
+const CANONICAL_HOST = "algodrills.com";
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);

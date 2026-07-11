@@ -9,7 +9,7 @@ const distDir = path.join(root, "dist");
 const site = {
   title: "Algorithm Notes",
   description: "Independent algorithm interview notes rebuilt from verified historical archive evidence.",
-  baseUrl: normalizeBaseUrl(process.env.SITE_URL || "https://www.algodrills.com"),
+  baseUrl: normalizeBaseUrl(process.env.SITE_URL || "https://algodrills.com"),
 };
 
 await main().catch((error) => {
@@ -301,8 +301,8 @@ ${urls}
 function normalizeBaseUrl(value) {
   const parsed = new URL(String(value).replace(/\/+$/, ""));
   parsed.protocol = "https:";
-  if (parsed.hostname === "algodrills.com") {
-    parsed.hostname = "www.algodrills.com";
+  if (parsed.hostname === "www.algodrills.com") {
+    parsed.hostname = "algodrills.com";
   }
   return parsed.toString().replace(/\/+$/, "");
 }

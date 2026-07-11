@@ -64,7 +64,7 @@ If the user does not control the old domain, deployment guidance must not promis
 4. Ask the AI to run one Lazarus recovery pass.
 5. Put the AI output into the `boilerplate/` structure.
 6. Run `npm run validate`.
-7. Run `npm run build`, or `SITE_URL=https://www.algodrills.com npm run build` when the production domain is known.
+7. Run `npm run build`, or `SITE_URL=https://algodrills.com npm run build` when the production domain is known.
 8. Deploy the generated `dist/` folder to any static host.
 
 ## Find Candidate Dead Sites
