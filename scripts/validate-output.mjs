@@ -149,7 +149,12 @@ async function checkMarkdown(relativePath, inventoryByUrl, selectedUrls) {
     return;
   }
 
-  for (const field of ["title", "source_url", "source_path", "wayback_snapshot", "evidence_tier", "topic", "rewrite_status"]) {
+  const originalGuide = frontmatter.content_type === "original-guide";
+  const requiredFields = originalGuide
+    ? ["title", "content_type", "description", "topic", "rewrite_status"]
+    : ["title", "source_url", "source_path", "wayback_snapshot", "evidence_tier", "topic", "rewrite_status"];
+
+  for (const field of requiredFields) {
     if (!frontmatter[field]) errors.push(`${relativePath}: missing frontmatter field ${field}`);
   }
 

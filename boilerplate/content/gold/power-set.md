@@ -44,3 +44,7 @@ When the recursion index reaches the end of the array, copy the current path int
 Bit masking is concise and iterative. Backtracking is often easier to extend when the problem adds constraints, duplicate handling, pruning, or ordering requirements.
 
 Both approaches have the same output size, so both require `O(2^N * N)` time in the general case.
+
+## Related Guide
+
+See [Backtracking vs Iterative Generation](/backtracking-vs-iterative-generation/) for guidance on choosing between recursive search, iterative expansion, and bit masks across combinatorial problems.

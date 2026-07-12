@@ -8,7 +8,7 @@ const contentDir = path.join(root, "boilerplate/content/gold");
 const distDir = path.join(root, "dist");
 const site = {
   title: "Algorithm Notes",
-  description: "Independent algorithm interview notes rebuilt from verified historical archive evidence.",
+  description: "Independent algorithm interview notes combining verified archive recovery with original learning guides.",
   baseUrl: normalizeBaseUrl(process.env.SITE_URL || "https://algodrills.com"),
 };
 
@@ -153,6 +153,7 @@ function markdownToHtml(markdown) {
 
 function inline(value) {
   return escapeHtml(value)
+    .replace(/\[([^\]]+)\]\((\/[A-Za-z0-9\-_/]*\/?)\)/g, '<a href="$2">$1</a>')
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
 }
@@ -171,7 +172,7 @@ function renderIndex(articles) {
       (article) => `
         <article class="card">
           <a href="/${article.slug}/">${escapeHtml(article.title)}</a>
-          <p>${escapeHtml(article.topic)} · ${escapeHtml(article.evidence_tier)} · independently rewritten</p>
+          <p>${escapeHtml(article.topic)} · ${article.content_type === "original-guide" ? "Original guide" : `${escapeHtml(article.evidence_tier)} archive recovery`}</p>
         </article>`,
     )
     .join("\n");
@@ -182,14 +183,14 @@ function renderIndex(articles) {
     canonicalPath: "/",
     body: `
       <section class="hero">
-        <p class="eyebrow">Public recovery mode</p>
-        <h1>Algorithm interview notes rebuilt from verified archive rows.</h1>
+        <p class="eyebrow">Algorithm interview study guides</p>
+        <h1>Archive-backed problems and original guides for reusable algorithm patterns.</h1>
         <p>${escapeHtml(site.description)}</p>
       </section>
       <section class="grid">${cards}</section>
       <section class="notice">
         <h2>Source policy</h2>
-        <p>This site does not claim ownership of the historical domain and does not use old-domain redirects. Each article was rewritten from verified Wayback CDX evidence.</p>
+        <p>Recovered articles identify their verified Wayback evidence and are independently rewritten. Original guides are labeled separately and do not claim a historical source.</p>
       </section>`,
   });
 }
@@ -202,17 +203,12 @@ function renderArticle(article, articles) {
 
   return layout({
     title: `${article.title} · ${site.title}`,
-    description: `${article.topic} note rebuilt in public recovery mode.`,
+    description: article.description || `${article.topic} note rebuilt in public recovery mode.`,
     canonicalPath: `/${article.slug}/`,
     body: `
       <article class="article">
         ${article.body}
-        <aside class="source">
-          <h2>Archive Evidence</h2>
-          <p><strong>Evidence tier:</strong> ${escapeHtml(article.evidence_tier)}</p>
-          <p><strong>Historical source path:</strong> <code>${escapeHtml(article.source_path)}</code></p>
-          <p><strong>Wayback snapshot:</strong> <a href="${escapeHtml(article.wayback_snapshot)}" rel="nofollow noopener">${escapeHtml(article.wayback_snapshot)}</a></p>
-        </aside>
+        ${renderSourceNote(article)}
       </article>
       <nav class="related">
         <h2>More Notes</h2>
@@ -221,13 +217,26 @@ function renderArticle(article, articles) {
   });
 }
 
+function renderSourceNote(article) {
+  if (article.content_type === "original-guide") {
+    return `<aside class="source"><h2>Editorial Note</h2><p>This is an original Algorithm Notes guide. It expands on related archive-backed problems without claiming a historical source.</p></aside>`;
+  }
+
+  return `<aside class="source">
+    <h2>Archive Evidence</h2>
+    <p><strong>Evidence tier:</strong> ${escapeHtml(article.evidence_tier)}</p>
+    <p><strong>Historical source path:</strong> <code>${escapeHtml(article.source_path)}</code></p>
+    <p><strong>Wayback snapshot:</strong> <a href="${escapeHtml(article.wayback_snapshot)}" rel="nofollow noopener">${escapeHtml(article.wayback_snapshot)}</a></p>
+  </aside>`;
+}
+
 function policyPages() {
   return [
     {
       slug: "about",
       title: "About Algorithm Notes",
-      description: "About Algorithm Notes, its archive evidence, editorial process, and independent status.",
-      body: `<h1>About Algorithm Notes</h1><p>Algorithm Notes is an independent educational reference rebuilt from verified historical archive evidence. It turns recoverable interview-problem topics into newly written explanations rather than copying archived pages.</p><h2>Editorial approach</h2><p>Each article identifies its evidence tier, historical source path, and Wayback snapshot. The archive proves that a topic existed; the published explanation, examples, and structure are independently rewritten and manually reviewed.</p><h2>Independent status</h2><p>This site does not claim ownership of the historical domain or affiliation with the companies, interview platforms, or archives mentioned in source notes.</p>`
+      description: "About Algorithm Notes, its archive evidence, original guides, editorial process, and independent status.",
+      body: `<h1>About Algorithm Notes</h1><p>Algorithm Notes is an independent educational reference combining recovered algorithm-interview topics with original guides about reusable problem-solving patterns.</p><h2>Editorial approach</h2><p>Recovered articles identify their evidence tier, historical source path, and Wayback snapshot. The archive proves that a topic existed; the published explanation, examples, and structure are independently rewritten and manually reviewed.</p><p>Original guides are labeled separately, connect related problems, and do not claim a historical source.</p><h2>Independent status</h2><p>This site does not claim ownership of the historical domain or affiliation with the companies, interview platforms, or archives mentioned in source notes.</p>`
     },
     {
       slug: "contact",
@@ -310,10 +319,10 @@ function layout({ title, description, canonicalPath, body }) {
   <div class="shell">
     <header>
       <a href="/">Algorithm Notes</a>
-      <span>No old-domain redirects · Public recovery</span>
+      <span>Archive-backed notes · Original guides</span>
     </header>
     <main>${body}</main>
-    <footer>Independent educational notes rebuilt from verified archive evidence. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></footer>
+    <footer>Independent algorithm education with clearly labeled archive recovery and original guides. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></footer>
   </div>
 </body>
 </html>`;

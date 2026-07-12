@@ -50,3 +50,7 @@ Let `N` be the number of input digits. In the worst case, every digit maps to fo
 The time complexity is `O(4^N * N)` because each complete combination has length `N`.
 
 The auxiliary space complexity is `O(N)` for the recursion stack and current path, excluding the output list.
+
+## Related Guide
+
+See [Backtracking vs Iterative Generation](/backtracking-vs-iterative-generation/) for a broader comparison of recursive search, iterative expansion, and bit-mask traversal.
