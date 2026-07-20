@@ -236,7 +236,7 @@ function policyPages() {
       slug: "about",
       title: "About Algorithm Notes",
       description: "About Algorithm Notes, its archive evidence, original guides, editorial process, and independent status.",
-      body: `<h1>About Algorithm Notes</h1><p>Algorithm Notes is an independent educational reference combining recovered algorithm-interview topics with original guides about reusable problem-solving patterns.</p><h2>Editorial approach</h2><p>Recovered articles identify their evidence tier, historical source path, and Wayback snapshot. The archive proves that a topic existed; the published explanation, examples, and structure are independently rewritten and manually reviewed.</p><p>Original guides are labeled separately, connect related problems, and do not claim a historical source.</p><h2>Independent status</h2><p>This site does not claim ownership of the historical domain or affiliation with the companies, interview platforms, or archives mentioned in source notes.</p>`
+      body: `<h1>About Algorithm Notes</h1><p>Algorithm Notes is an independent educational reference combining recovered algorithm-interview topics with original guides about reusable problem-solving patterns.</p><p>AlgoDrills is actively maintained. <a href="https://github.com/jazfox-cloud/algodrills">View the project on GitHub</a>.</p><h2>Editorial approach</h2><p>Recovered articles identify their evidence tier, historical source path, and Wayback snapshot. The archive proves that a topic existed; the published explanation, examples, and structure are independently rewritten and manually reviewed.</p><p>Original guides are labeled separately, connect related problems, and do not claim a historical source.</p><h2>Independent status</h2><p>This site does not claim ownership of the historical domain or affiliation with the companies, interview platforms, or archives mentioned in source notes.</p>`
     },
     {
       slug: "contact",
@@ -322,7 +322,7 @@ function layout({ title, description, canonicalPath, body }) {
       <span>Archive-backed notes · Original guides</span>
     </header>
     <main>${body}</main>
-    <footer>Independent algorithm education with clearly labeled archive recovery and original guides. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></footer>
+    <footer>Independent algorithm education with clearly labeled archive recovery and original guides. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://github.com/jazfox-cloud/algodrills">GitHub</a></footer>
   </div>
 </body>
 </html>`;
