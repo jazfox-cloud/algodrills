@@ -1,3 +1,11 @@
+# AlgoDrills
+
+Interactive algorithm and data structure drills for practicing problem-solving patterns.
+
+**Try it online:** [AlgoDrills.com](https://algodrills.com/)
+
+Practice algorithms, data structures, and coding interview patterns through focused, repeatable drills.
+
 # Lazarus
 
 Lazarus is a prompt-based recovery workflow for dead websites.
