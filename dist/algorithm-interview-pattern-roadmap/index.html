@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Algorithm Interview Pattern Roadmap: What to Practice First · Algorithm Notes</title>
+  <meta name="description" content="Use the archived InterviewBits algorithms track as a pattern map for choosing which interview problem types to practice first.">
+  <link rel="canonical" href="https://algodrills.com/algorithm-interview-pattern-roadmap/">
+  <meta property="og:title" content="Algorithm Interview Pattern Roadmap: What to Practice First · Algorithm Notes">
+  <meta property="og:description" content="Use the archived InterviewBits algorithms track as a pattern map for choosing which interview problem types to practice first.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://algodrills.com/algorithm-interview-pattern-roadmap/">
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>Archive-backed notes · Original guides</span>
+    </header>
+    <main>
+      <article class="article">
+        <h1>Algorithm Interview Pattern Roadmap: What to Practice First</h1>
+<p>The refreshed Wayback CDX export for <code>interviewbits.com</code> still shows an archived algorithms category page at <code>/blog/categories/algorithms/</code>, but it does not surface any new unpublished 2014-2015 problem posts beyond the set already recovered on AlgoDrills. That is still enough to publish something useful: a roadmap that turns the verified archive topics into a practical study order.</p>
+<p>If you are preparing for interviews, the problem is usually not finding *a* question. The problem is choosing a sequence that teaches reusable patterns instead of random tricks.</p>
+<h2>Start With Search Spaces</h2>
+<p>Begin with problems where the state is small and the branching rule is obvious. These problems teach how to represent a partial answer and extend it step by step.</p>
+<ul><li><a href="/keypad/">Phone Keypad Letter Combinations</a> for recursive branching over fixed choices</li><li><a href="/power-set/">Power Set Generation</a> for inclusion and exclusion decisions</li><li><a href="/backtracking-vs-iterative-generation/">Backtracking vs Iterative Generation for Combinatorial Problems</a> for choosing the traversal model</li></ul>
+<p>These are good first drills because the correctness argument is visual. You can explain what each recursive level means, what a completed path represents, and why every valid result appears exactly once.</p>
+<h2>Add Interval and Ordering Problems</h2>
+<p>Once search-space problems feel mechanical, move to array transformations where correctness depends on maintaining a loop invariant.</p>
+<ul><li><a href="/insert-interval/">Insert Interval</a> for reasoning about sorted ranges and merge boundaries</li><li><a href="/sort-by-length-then-frequency/">Sort Words by Length and Frequency</a> for designing a multi-key comparison rule</li><li><a href="/plus-minus-array/">Plus Minus Array</a> for controlled reordering under a structural constraint</li></ul>
+<p>These questions are useful because they shift the interview discussion from &quot;can you generate all answers?&quot; to &quot;can you preserve the right structure while scanning the input once?&quot;</p>
+<h2>Practice Candidate-Elimination Patterns</h2>
+<p>Many interview questions look different on the surface but hide the same idea: one pass can remove impossible answers until only one candidate remains.</p>
+<ul><li><a href="/celebrities/">Celebrity Problem</a> for pairwise elimination in a directed graph</li><li><a href="/car-race/">Car Race Leaderboard</a> for maintaining the current best state as new events arrive</li></ul>
+<p>When you study these problems, focus on the invariant that justifies discarding information. If you cannot explain why a candidate is impossible, the optimization is not interview-safe.</p>
+<h2>Cover Numeric and Bitwise Reasoning</h2>
+<p>Numeric problems often test whether you can replace a black-box library call with a controlled search or arithmetic transformation.</p>
+<ul><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a> for monotonic binary search over answers</li><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic</a> for decomposing multiplication, powers, and modulo into shift-based reasoning</li><li><a href="/weighted-random/">Weighted Random Selection</a> for translating a probability distribution into deterministic prefix logic</li></ul>
+<p>This group is valuable because it forces you to justify edge cases. Overflow, integer truncation, and off-by-one behavior matter more than elegant syntax.</p>
+<h2>Add Geometry and Spatial Queries Later</h2>
+<p>Geometry questions are worth doing, but they are usually not the best first practice set. They add coordinate reasoning on top of the algorithm itself.</p>
+<ul><li><a href="/center-points/">Center Points</a> for midpoint and center calculations</li><li><a href="/rectangles-store/">Rectangles Store</a> for spatial containment queries</li></ul>
+<p>Treat these as second-pass practice after arrays, intervals, and elimination problems are comfortable. Otherwise you may spend too much time on representation details before the core interview habits are stable.</p>
+<h2>A Practical Four-Session Order</h2>
+<p>If you want a concrete weekly sequence, use this:</p>
+<p>1. Search spaces: keypad, power set, backtracking vs iterative generation. 2. Structural arrays: insert interval, plus/minus array, sort by length and frequency. 3. Elimination and state tracking: celebrities, car race, log every second. 4. Numeric and spatial reasoning: square root, bitwise arithmetic, weighted random, center points, rectangles store.</p>
+<p>The goal is not to memorize answers. The goal is to notice that many interview prompts reduce to a small number of repeatable moves:</p>
+<ul><li>grow a partial solution</li><li>maintain a loop invariant</li><li>eliminate impossible candidates</li><li>binary-search a monotonic answer space</li><li>aggregate enough state to answer future queries cheaply</li></ul>
+<h2>What to Write Down After Each Drill</h2>
+<p>After solving a problem, record four things:</p>
+<ul><li>the state you maintained</li><li>the invariant that stayed true</li><li>the step where wrong candidates were discarded or merged</li><li>the reason this pattern would transfer to another problem</li></ul>
+<p>That short review is usually more valuable than re-reading the full solution. It turns one question into a reusable template.</p>
+<h2>What the CDX Refresh Changed</h2>
+<p>The July 21, 2026 CDX refresh confirmed the old algorithms category page still exists in the archive and confirmed again that the known 2014-2015 algorithm posts are the clean, relevant set. It did <strong>not</strong> reveal a new unpublished algorithm-interview article that met the exact-CDX bar.</p>
+<p>That means the right publishing move is not to force a weak recovery. It is to keep expanding original, pattern-first guides that sit on top of the verified archive set and help readers connect the problems they are already using.</p>
+        <aside class="source"><h2>Editorial Note</h2><p>This is an original Algorithm Notes guide. It expands on related archive-backed problems without claiming a historical source.</p></aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul><li><a href="/backtracking-vs-iterative-generation/">Backtracking vs Iterative Generation for Combinatorial Problems</a></li><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/car-race/">Car Race Leaderboard: Tracking the Fastest Car on a Linear Track</a></li><li><a href="/celebrities/">Celebrity Problem: Elimination Strategy for a Directed Knows Graph</a></li><li><a href="/center-points/">Center Points: Midpoints and Geometric Centers in Interview Problems</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/log-every-second/">Log Every Second: Scheduling Repeated Output Without Blocking</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/plus-minus-array/">Plus Minus Array: Reordering Positive and Negative Values</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/rectangles-store/">Rectangles Store: Fast Point Queries Over Overlapping Rectangles</a></li><li><a href="/sort-by-length-then-frequency/">Sort Words by Length and Frequency</a></li><li><a href="/weighted-random/">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
+      </nav></main>
+    <footer>Independent algorithm education with clearly labeled archive recovery and original guides. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://github.com/jazfox-cloud/algodrills">GitHub</a></footer>
+  </div>
+</body>
+</html>
