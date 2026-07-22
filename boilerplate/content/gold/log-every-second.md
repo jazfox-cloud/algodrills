@@ -1,5 +1,7 @@
 ---
 title: "Log Every Second: Scheduling Repeated Output Without Blocking"
+seo_title: "Log Every Second Without Blocking"
+description: "Compare blocking and timer-based ways to emit one value per second, including scheduling drift, cancellation, completion, and testing concerns."
 source_url: "http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/"
 source_path: "/blog/2014/12/02/log-every-second/"
 wayback_snapshot: "https://web.archive.org/web/20141228212406/http://www.interviewbits.com:80/blog/2014/12/02/log-every-second/"

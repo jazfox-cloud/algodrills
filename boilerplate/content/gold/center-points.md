@@ -1,5 +1,7 @@
 ---
 title: "Center Points: Midpoints and Geometric Centers in Interview Problems"
+seo_title: "Center Points in Interview Geometry Problems"
+description: "Compare midpoint, centroid, and bounding-box center definitions, with formulas and edge cases for choosing the intended center of a set of points."
 source_url: "http://www.interviewbits.com:80/blog/2015/02/02/center-points/"
 source_path: "/blog/2015/02/02/center-points/"
 wayback_snapshot: "https://web.archive.org/web/20150212021106/http://www.interviewbits.com:80/blog/2015/02/02/center-points/"

@@ -3,13 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>How to Compute a Square Root Without Calling a Library Function · Algorithm Notes</title>
-  <meta name="description" content="algorithm-interview note rebuilt in public recovery mode.">
+  <title>Compute a Square Root Without a Library Function</title>
+  <meta name="description" content="Compute integer or approximate square roots without a library call using binary search or Newton's method, with boundary and precision checks.">
   <link rel="canonical" href="https://algodrills.com/square-root/">
-  <meta property="og:title" content="How to Compute a Square Root Without Calling a Library Function · Algorithm Notes">
-  <meta property="og:description" content="algorithm-interview note rebuilt in public recovery mode.">
-  <meta property="og:type" content="article">
   <meta property="og:url" content="https://algodrills.com/square-root/">
+  <meta property="og:title" content="Compute a Square Root Without a Library Function">
+  <meta property="og:description" content="Compute integer or approximate square roots without a library call using binary search or Newton's method, with boundary and precision checks.">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://algodrills.com/images/algodrills-social.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:alt" content="AlgoDrills — Algorithm Practice, Explained Clearly">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://algodrills.com/images/algodrills-social.png">
+  <meta name="twitter:image:alt" content="AlgoDrills — Algorithm Practice, Explained Clearly">
+  <meta name="twitter:title" content="Compute a Square Root Without a Library Function">
+  <meta name="twitter:description" content="Compute integer or approximate square roots without a library call using binary search or Newton's method, with boundary and precision checks.">
   <style>
     :root {
       color-scheme: light;
@@ -22,7 +32,7 @@
     }
     * { box-sizing: border-box; }
     body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
-    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; overflow-wrap: anywhere; }
     .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
     header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
     header a { color: var(--text); text-decoration: none; font-weight: 700; }
@@ -40,9 +50,9 @@
     .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
     .article { max-width: 760px; }
     .article h1 { font-size: clamp(30px, 6vw, 46px); }
-    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; overflow-wrap: anywhere; }
     pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
-    pre code { border: 0; padding: 0; background: transparent; }
+    pre code { border: 0; padding: 0; background: transparent; overflow-wrap: normal; }
     ul { padding-left: 22px; }
     footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
   </style>

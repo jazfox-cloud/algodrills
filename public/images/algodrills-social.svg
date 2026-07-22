@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">AlgoDrills social sharing image</title>
+  <desc id="description">AlgoDrills — Algorithm Practice, Explained Clearly, with an abstract algorithm path and array diagram.</desc>
+  <metadata>Original vector artwork created for AlgoDrills on 2026-07-22. No third-party logos, screenshots, photos, fonts, or illustrations are embedded. Copyright 2026 AlgoDrills contributors; licensed for use by the AlgoDrills project and its social previews.</metadata>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07162f"/>
+      <stop offset="0.58" stop-color="#0b2450"/>
+      <stop offset="1" stop-color="#102e61"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4aa3ff"/>
+      <stop offset="1" stop-color="#16d7eb"/>
+    </linearGradient>
+    <linearGradient id="route" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16d7eb"/>
+      <stop offset="1" stop-color="#3978ff"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="grid" width="54" height="54" patternUnits="userSpaceOnUse">
+      <path d="M54 0H0V54" fill="none" stroke="#72a4ef" stroke-opacity="0.09" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#background)"/>
+  <rect x="520" width="680" height="630" fill="url(#grid)"/>
+  <circle cx="1030" cy="112" r="190" fill="#2457c5" opacity="0.08"/>
+  <circle cx="827" cy="522" r="155" fill="#16d7eb" opacity="0.04"/>
+
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="84" y="234" fill="#f7f9ff" font-size="86" font-weight="700" letter-spacing="-3">Algo<tspan fill="url(#brand)">Drills</tspan></text>
+    <rect x="84" y="274" width="106" height="5" rx="2.5" fill="#16d7eb"/>
+    <text x="84" y="342" fill="#f7f9ff" font-size="33" font-weight="600">Algorithm Practice,</text>
+    <text x="84" y="388" fill="#f7f9ff" font-size="33" font-weight="600">Explained Clearly</text>
+    <text x="84" y="438" fill="#b9c8e2" font-size="18" letter-spacing="2.2">ARCHIVE-BACKED NOTES  ·  ORIGINAL GUIDES</text>
+  </g>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M642 270H720L780 214L846 142L925 171L1001 108H1100" stroke="#16d7eb" stroke-width="7"/>
+    <path d="M780 214L834 268H1098" stroke="#2f8cff" stroke-width="5" stroke-dasharray="13 13"/>
+    <path d="M780 214L840 350L925 405H1098" stroke="url(#route)" stroke-width="6"/>
+  </g>
+
+  <g filter="url(#glow)">
+    <circle cx="642" cy="270" r="14" fill="#07162f" stroke="#16d7eb" stroke-width="5"/>
+    <circle cx="720" cy="270" r="13" fill="#16d7eb"/>
+    <circle cx="780" cy="214" r="15" fill="#f7f9ff"/>
+    <circle cx="846" cy="142" r="14" fill="#16d7eb"/>
+    <circle cx="925" cy="171" r="14" fill="#19bce8"/>
+    <circle cx="1001" cy="108" r="14" fill="#16d7eb"/>
+    <circle cx="1100" cy="108" r="20" fill="#f7f9ff" stroke="#8bdff0" stroke-width="6"/>
+    <circle cx="834" cy="268" r="12" fill="#2457c5" stroke="#43a9ff" stroke-width="3"/>
+    <circle cx="925" cy="268" r="12" fill="#2457c5" stroke="#43a9ff" stroke-width="3"/>
+    <circle cx="1098" cy="268" r="19" fill="#2f78ed" stroke="#67a6ff" stroke-width="5"/>
+    <circle cx="840" cy="350" r="12" fill="#415ce0" stroke="#6790ff" stroke-width="3"/>
+    <circle cx="925" cy="405" r="12" fill="#2457c5" stroke="#518cff" stroke-width="3"/>
+    <circle cx="1098" cy="405" r="19" fill="#415ce0" stroke="#78a7ff" stroke-width="5"/>
+  </g>
+
+  <g transform="translate(690 480)" fill="none" stroke="#4b8cff" stroke-width="3">
+    <rect width="58" height="58" rx="6"/>
+    <rect x="62" width="58" height="58" rx="6"/>
+    <rect x="124" width="58" height="58" rx="6"/>
+    <rect x="186" width="58" height="58" rx="6" fill="#16d7eb" stroke="#62efff"/>
+    <rect x="248" width="58" height="58" rx="6"/>
+    <rect x="310" width="58" height="58" rx="6"/>
+    <rect x="372" width="58" height="58" rx="6"/>
+  </g>
+
+  <g fill="#3d75d3" opacity="0.55">
+    <circle cx="555" cy="92" r="3"/><circle cx="575" cy="92" r="3"/><circle cx="595" cy="92" r="3"/>
+    <circle cx="555" cy="112" r="3"/><circle cx="575" cy="112" r="3"/><circle cx="595" cy="112" r="3"/>
+    <circle cx="1080" cy="520" r="3"/><circle cx="1100" cy="520" r="3"/><circle cx="1120" cy="520" r="3"/>
+    <circle cx="1080" cy="540" r="3"/><circle cx="1100" cy="540" r="3"/><circle cx="1120" cy="540" r="3"/>
+  </g>
+</svg>

@@ -1,5 +1,6 @@
 ---
 title: "Insert Interval: Merging a New Range Into Sorted Intervals"
+description: "Insert a new interval into a sorted non-overlapping list, merge overlaps in one scan, and review complexity, boundary cases, and implementation."
 source_url: "http://www.interviewbits.com:80/blog/2014/11/29/insert/"
 source_path: "/blog/2014/11/29/insert/"
 wayback_snapshot: "https://web.archive.org/web/20141228212345/http://www.interviewbits.com:80/blog/2014/11/29/insert/"

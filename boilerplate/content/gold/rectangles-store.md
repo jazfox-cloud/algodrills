@@ -1,5 +1,7 @@
 ---
 title: "Rectangles Store: Fast Point Queries Over Overlapping Rectangles"
+seo_title: "Rectangle Store: Fast Point Queries"
+description: "Design a rectangle store for fast point queries using candidate filtering and spatial indexing, with overlap, boundary, and complexity considerations."
 source_url: "http://www.interviewbits.com:80/blog/2014/12/18/rectangles-store/"
 source_path: "/blog/2014/12/18/rectangles-store/"
 wayback_snapshot: "https://web.archive.org/web/20141228193350/http://www.interviewbits.com:80/blog/2014/12/18/rectangles-store/"

@@ -1,5 +1,7 @@
 ---
 title: "Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo"
+seo_title: "Bitwise Arithmetic: Multiply, Powers, and Modulo"
+description: "Learn how shifts and masks replace multiplication by powers of two, test powers of two, and compute modulo when the divisor is a power of two."
 source_url: "http://www.interviewbits.com:80/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/"
 source_path: "/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/"
 wayback_snapshot: "https://web.archive.org/web/20150212021013/http://www.interviewbits.com:80/blog/2015/01/06/replace-multiplication-power-and-modulo-with-bitwise-operators/"

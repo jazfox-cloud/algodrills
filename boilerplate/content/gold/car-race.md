@@ -1,5 +1,7 @@
 ---
 title: "Car Race Leaderboard: Tracking the Fastest Car on a Linear Track"
+seo_title: "Car Race Leaderboard on a Linear Track"
+description: "Model a linear car race as ordered events, update positions when speeds change, and track the current leader without simulating every instant."
 source_url: "http://www.interviewbits.com:80/blog/2014/12/03/car_race/"
 source_path: "/blog/2014/12/03/car_race/"
 wayback_snapshot: "https://web.archive.org/web/20141228193216/http://www.interviewbits.com:80/blog/2014/12/03/car_race/"

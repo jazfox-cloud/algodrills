@@ -1,5 +1,6 @@
 ---
 title: "Weighted Random Selection: Picking Values by Distribution"
+description: "Implement weighted random selection with prefix sums and binary search, then handle invalid weights, floating-point boundaries, and repeated draws."
 source_url: "http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/"
 source_path: "/blog/2014/12/11/random-number-with-distribution/"
 wayback_snapshot: "https://web.archive.org/web/20141228193243/http://www.interviewbits.com:80/blog/2014/12/11/random-number-with-distribution/"

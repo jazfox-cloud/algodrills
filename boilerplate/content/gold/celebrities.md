@@ -1,5 +1,7 @@
 ---
 title: "Celebrity Problem: Elimination Strategy for a Directed Knows Graph"
+seo_title: "Celebrity Problem: Directed Knows Graph Strategy"
+description: "Solve the celebrity problem with candidate elimination, then verify the directed knows-graph conditions in linear time and constant space."
 source_url: "http://www.interviewbits.com:80/blog/2014/12/15/celebrities/"
 source_path: "/blog/2014/12/15/celebrities/"
 wayback_snapshot: "https://web.archive.org/web/20141228193310/http://www.interviewbits.com:80/blog/2014/12/15/celebrities/"

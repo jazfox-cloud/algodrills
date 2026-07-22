@@ -1,5 +1,7 @@
 ---
 title: "Phone Keypad Letter Combinations: A Backtracking Interview Problem"
+seo_title: "Phone Keypad Letter Combinations with Backtracking"
+description: "Generate phone keypad letter combinations with backtracking, including the digit mapping, recursive state, complexity, and input edge cases."
 source_url: "http://www.interviewbits.com:80/blog/2014/11/28/keypad"
 source_path: "/blog/2014/11/28/keypad"
 wayback_snapshot: "https://web.archive.org/web/20150212075129/http://www.interviewbits.com:80/blog/2014/11/28/keypad"

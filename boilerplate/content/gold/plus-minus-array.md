@@ -1,5 +1,6 @@
 ---
 title: "Plus Minus Array: Reordering Positive and Negative Values"
+description: "Rearrange positive and negative array values by grouping or alternating signs, with stable and in-place approaches plus their tradeoffs."
 source_url: "http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/"
 source_path: "/blog/2014/12/01/plus-minus-array/"
 wayback_snapshot: "https://web.archive.org/web/20141228212355/http://www.interviewbits.com:80/blog/2014/12/01/plus-minus-array/"

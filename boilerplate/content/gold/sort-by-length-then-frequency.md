@@ -1,5 +1,6 @@
 ---
 title: "Sort Words by Length and Frequency"
+description: "Count distinct words, then sort them by length and frequency with explicit tie-breakers for deterministic output and predictable complexity."
 source_url: "http://www.interviewbits.com:80/blog/2014/12/03/sort-by-length-then-frequency/"
 source_path: "/blog/2014/12/03/sort-by-length-then-frequency/"
 wayback_snapshot: "https://web.archive.org/web/20141228193235/http://www.interviewbits.com:80/blog/2014/12/03/sort-by-length-then-frequency/"

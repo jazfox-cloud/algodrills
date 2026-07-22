@@ -1,5 +1,6 @@
 ---
 title: "Power Set Generation: Two Practical Interview Approaches"
+description: "Generate every subset with bit masks or backtracking, understand the 2^N output size, and compare ordering, memory, and duplicate handling."
 source_url: "http://www.interviewbits.com:80/blog/2014/12/03/power-set/"
 source_path: "/blog/2014/12/03/power-set/"
 wayback_snapshot: "https://web.archive.org/web/20141228212413/http://www.interviewbits.com:80/blog/2014/12/03/power-set/"

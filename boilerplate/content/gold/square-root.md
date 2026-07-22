@@ -1,5 +1,7 @@
 ---
 title: "How to Compute a Square Root Without Calling a Library Function"
+seo_title: "Compute a Square Root Without a Library Function"
+description: "Compute integer or approximate square roots without a library call using binary search or Newton's method, with boundary and precision checks."
 source_url: "http://www.interviewbits.com:80/blog/2014/11/29/square-root/"
 source_path: "/blog/2014/11/29/square-root/"
 wayback_snapshot: "https://web.archive.org/web/20141228212350/http://www.interviewbits.com:80/blog/2014/11/29/square-root/"

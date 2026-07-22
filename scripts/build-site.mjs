@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 
-import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
 const contentDir = path.join(root, "boilerplate/content/gold");
+const publicDir = path.join(root, "public");
 const distDir = path.join(root, "dist");
 const site = {
   title: "Algorithm Notes",
   description: "Independent algorithm interview notes combining verified archive recovery with original learning guides.",
+  seoDescription: "Explore archive-backed algorithm interview problems and original guides covering reusable patterns, implementations, complexity, and edge cases.",
   baseUrl: normalizeBaseUrl(process.env.SITE_URL || "https://algodrills.com"),
 };
+site.socialImageUrl = `${site.baseUrl}/images/algodrills-social.png`;
 
 await main().catch((error) => {
   console.error(error?.stack || error?.message || String(error));
@@ -20,11 +23,13 @@ await main().catch((error) => {
 async function main() {
   await rm(distDir, { recursive: true, force: true });
   await mkdir(distDir, { recursive: true });
+  await cp(publicDir, distDir, { recursive: true });
 
   const articles = await loadArticles();
   articles.sort((a, b) => a.title.localeCompare(b.title));
 
   await writeFile(path.join(distDir, "index.html"), renderIndex(articles));
+  await writeFile(path.join(distDir, "404.html"), renderNotFound());
   await writeFile(path.join(distDir, "robots.txt"), renderRobots());
   await writeFile(path.join(distDir, "sitemap.xml"), renderSitemap(articles));
 
@@ -179,7 +184,7 @@ function renderIndex(articles) {
 
   return layout({
     title: site.title,
-    description: site.description,
+    description: site.seoDescription,
     canonicalPath: "/",
     body: `
       <section class="hero">
@@ -202,9 +207,10 @@ function renderArticle(article, articles) {
     .join("");
 
   return layout({
-    title: `${article.title} · ${site.title}`,
+    title: article.seo_title || article.title,
     description: article.description || `${article.topic} note rebuilt in public recovery mode.`,
     canonicalPath: `/${article.slug}/`,
+    pageType: "article",
     body: `
       <article class="article">
         ${article.body}
@@ -235,25 +241,25 @@ function policyPages() {
     {
       slug: "about",
       title: "About Algorithm Notes",
-      description: "About Algorithm Notes, its archive evidence, original guides, editorial process, and independent status.",
+      description: "Learn how Algorithm Notes uses verified archive evidence and original editorial work to publish independent algorithm interview study guides.",
       body: `<h1>About Algorithm Notes</h1><p>Algorithm Notes is an independent educational reference combining recovered algorithm-interview topics with original guides about reusable problem-solving patterns.</p><p>AlgoDrills is actively maintained. <a href="https://github.com/jazfox-cloud/algodrills">View the project on GitHub</a>.</p><h2>Editorial approach</h2><p>Recovered articles identify their evidence tier, historical source path, and Wayback snapshot. The archive proves that a topic existed; the published explanation, examples, and structure are independently rewritten and manually reviewed.</p><p>Original guides are labeled separately, connect related problems, and do not claim a historical source.</p><h2>Independent status</h2><p>This site does not claim ownership of the historical domain or affiliation with the companies, interview platforms, or archives mentioned in source notes.</p>`
     },
     {
       slug: "contact",
       title: "Contact Algorithm Notes",
-      description: "Contact Algorithm Notes about corrections, archive evidence, privacy, or accessibility.",
+      description: "Contact Algorithm Notes to report a technical correction, ask about archive evidence, or raise a privacy or accessibility concern.",
       body: `<h1>Contact Algorithm Notes</h1><p>Email <a href="mailto:hello@algodrills.com">hello@algodrills.com</a> for technical corrections, archive-source questions, privacy requests, or accessibility reports.</p><p>For a correction, include the page URL, the exact statement or code example to review, and a reliable technical reference. We do not provide personalized interview, hiring, or academic-assessment services.</p>`
     },
     {
       slug: "privacy",
       title: "Privacy Policy",
-      description: "Privacy policy for Algorithm Notes.",
+      description: "Read how Algorithm Notes and its hosting, analytics, security, and advertising providers may process visitor and device information.",
       body: `<h1>Privacy Policy</h1><p>Algorithm Notes does not require accounts or payments to read educational content. Hosting, analytics, and security providers may process IP addresses, browser or device information, requested pages, timestamps, and referral data to operate and protect the site.</p><h2>Advertising cookies</h2><p>Algorithm Notes may use third-party advertising services, including Google AdSense. Third-party vendors, including Google, may use cookies, web beacons, IP addresses, or similar identifiers to serve and measure ads based on a visitor's prior visits to this website or other websites.</p><p>You can control or opt out of personalized Google advertising through <a href="https://adssettings.google.com/">Google Ads Settings</a>. Additional industry opt-out choices are available at <a href="https://www.aboutads.info/choices/">aboutads.info</a>.</p><h2>Contact</h2><p>Privacy questions can be sent to <a href="mailto:hello@algodrills.com">hello@algodrills.com</a>.</p><p>Last updated July 11, 2026.</p>`
     },
     {
       slug: "terms",
       title: "Terms of Use",
-      description: "Terms governing use of Algorithm Notes educational content.",
+      description: "Review the terms for using Algorithm Notes educational explanations, code examples, archive evidence, and independently written material.",
       body: `<h1>Terms of Use</h1><p>Last updated July 11, 2026.</p><h2>Educational use</h2><p>Algorithm Notes provides independent educational explanations and code examples. Content is not a guarantee of interview, hiring, academic, or production-software outcomes.</p><h2>Archive evidence</h2><p>Historical paths and Wayback links document topic provenance. They do not imply endorsement, ownership of a former domain, or permission to misrepresent archived material.</p><h2>Acceptable use</h2><p>Do not interfere with the site, use it to facilitate cheating or deception, or republish substantial portions of its editorial work as your own.</p><h2>Contact</h2><p>Questions can be sent to <a href="mailto:hello@algodrills.com">hello@algodrills.com</a>.</p>`
     }
   ];
@@ -263,8 +269,34 @@ function renderPolicyPage(page) {
   return layout({ title: `${page.title} · ${site.title}`, description: page.description, canonicalPath: `/${page.slug}/`, body: `<article class="article">${page.body}</article>` });
 }
 
-function layout({ title, description, canonicalPath, body }) {
-  const canonicalUrl = `${site.baseUrl}${canonicalPath}`;
+function renderNotFound() {
+  return layout({
+    title: "Page Not Found · Algorithm Notes",
+    description: "The requested Algorithm Notes page could not be found. Return to the homepage to browse the available algorithm interview guides.",
+    canonicalPath: null,
+    robots: "noindex, follow",
+    body: `<article class="article"><h1>Page not found</h1><p>The requested page does not exist.</p><p><a href="/">Return to Algorithm Notes</a>.</p></article>`,
+  });
+}
+
+function layout({ title, description, canonicalPath, body, pageType = "website", robots = "" }) {
+  const canonicalUrl = canonicalPath === null ? "" : `${site.baseUrl}${canonicalPath}`;
+  const canonicalTags = canonicalUrl
+    ? `  <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+  <meta property="og:url" content="${escapeHtml(canonicalUrl)}">`
+    : "";
+  const robotsTag = robots ? `  <meta name="robots" content="${escapeHtml(robots)}">\n` : "";
+  const socialImageAlt = "AlgoDrills — Algorithm Practice, Explained Clearly";
+  const socialImageTags = canonicalUrl
+    ? `  <meta property="og:image" content="${escapeHtml(site.socialImageUrl)}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:alt" content="${escapeHtml(socialImageAlt)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="${escapeHtml(site.socialImageUrl)}">
+  <meta name="twitter:image:alt" content="${escapeHtml(socialImageAlt)}">`
+    : `  <meta name="twitter:card" content="summary">`;
 
   return `<!doctype html>
 <html lang="en">
@@ -273,11 +305,13 @@ function layout({ title, description, canonicalPath, body }) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
-  <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+${robotsTag}${canonicalTags}
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
-  <meta property="og:type" content="article">
-  <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
+  <meta property="og:type" content="${escapeHtml(pageType)}">
+${socialImageTags}
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">
   <style>
     :root {
       color-scheme: light;
@@ -290,7 +324,7 @@ function layout({ title, description, canonicalPath, body }) {
     }
     * { box-sizing: border-box; }
     body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
-    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; overflow-wrap: anywhere; }
     .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
     header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
     header a { color: var(--text); text-decoration: none; font-weight: 700; }
@@ -308,9 +342,9 @@ function layout({ title, description, canonicalPath, body }) {
     .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
     .article { max-width: 760px; }
     .article h1 { font-size: clamp(30px, 6vw, 46px); }
-    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; overflow-wrap: anywhere; }
     pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
-    pre code { border: 0; padding: 0; background: transparent; }
+    pre code { border: 0; padding: 0; background: transparent; overflow-wrap: normal; }
     ul { padding-left: 22px; }
     footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
   </style>

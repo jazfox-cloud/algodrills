@@ -1,5 +1,6 @@
 ---
 title: "Backtracking vs Iterative Generation for Combinatorial Problems"
+seo_title: "Backtracking vs Iterative Combinatorial Generation"
 content_type: "original-guide"
 description: "Learn when to use backtracking, bit masks, or iterative expansion to generate combinations and subsets in algorithm interviews."
 topic: "algorithm-interview"
