@@ -204,6 +204,101 @@ Text (verbatim): "AlgoDrills" and "Algorithm Practice, Explained Clearly"
 Constraints: Opaque background; text must be exactly spelled; no claims, metrics, badges, people, screenshots, or platform affiliations; no third-party logos; no GitHub, Google, LeetCode, or company logos; no watermark; safe crop margins.
 ```
 
+## 7A. 显式 `/404` 重定向循环独立诊断与本地修复（2026-07-22 补充）
+
+### 7A.1 范围与安全基线
+
+- 生产基线：`main` / `4d386df2f4cfc6e403c035051ecafe03bf7944ae`。
+- `git fetch origin` 后 `HEAD = origin/main`，`HEAD...origin/main = 0 0`。
+- 工作区开始时只有既有、未跟踪的 `reports/gsc-weekly/2026-07-22-algodrills.com-gsc-weekly-review.md`；该文件未修改、移动、删除或暂存。
+- 本轮未执行 git add、commit、push、deploy、Cloudflare/GSC/Ahrefs 写操作，也未修改 DNS、SSL 或 Zone 规则。
+
+### 7A.2 生产逐跳证据
+
+所有请求均禁用自动跟随。生产响应的 `Server` 均为 `cloudflare`；Pages/Functions 路径的 `CF-Cache-Status` 为 `DYNAMIC`。重定向响应无正文或 Content-Type，普通未知路径最终 404 为 `text/html; charset=utf-8`、`Cache-Control: no-store`，正文是顶层自定义 404。
+
+| 初始地址 | 生产逐跳路径 | Query/正文结果 |
+| --- | --- | --- |
+| `https://algodrills.com/404` | `301 Location: https://algodrills.com/404/` → `308 Location: /404` → 循环 | 无正文 |
+| `https://algodrills.com/404/` | `308 Location: /404` → `301 Location: https://algodrills.com/404/` → 循环 | 无正文 |
+| `https://algodrills.com/404.html` | `308 Location: /404` → `301 .../404/` → `308 /404` → 循环 | 无正文 |
+| `https://algodrills.com/missing-page` | `301 .../missing-page/` → `404` | 自定义 404，`no-store` |
+| `https://algodrills.com/missing-page/` | `404` | 自定义 404，`no-store` |
+| `https://algodrills.com/missing-page?ref=audit` | `301 .../missing-page/?ref=audit` → `404` | Query 保留 |
+| `https://algodrills.com/this-page-does-not-exist/` | `404` | 自定义 404 |
+| `https://algodrills.com/missing/nested/path/` | `404` | 自定义 404 |
+
+HTTP apex 先单跳到同路径的 HTTPS apex；www 先单跳到同路径的 HTTPS apex，之后进入上述相同路径处理。`http://www.algodrills.com/missing-page?ref=audit` 的完整链为 HTTPS apex 同路径 → 补尾斜杠并保留 query → 404，没有跳转首页。
+
+本次抽样的重定向和 404 响应均带独立 `CF-Ray`，例如 `/404` 的 301 为 `a1f327dbddda63f0-LHR`、后续 308 为 `a1f327dd7fa563f0-LHR`，`/missing-page/` 的最终 404 为 `a1f327eb3b3d63f0-LHR`。这些独立 Ray 证明每一跳都是新的 Cloudflare 请求；未读取或输出任何凭据。
+
+### 7A.3 根因
+
+这是仓库 middleware 与 Cloudflare Pages 静态 HTML 规范化共同形成的循环，不是 `_redirects` 或 Zone 规则单独造成：
+
+1. 仓库没有 `public/_redirects` 或 `dist/_redirects`，也没有其他 Pages Function；只有全局 `functions/_middleware.js`。
+2. middleware 的统一规则会给所有无扩展名、无尾斜杠路径追加 `/`，因此 `/404` 被仓库层 301 到 `/404/`。
+3. Cloudflare Pages 会把 HTML 文件路由规范化为无扩展名形式。顶层 `404.html` 对应显式 `/404`；Pages 将 `/404.html` 和 `/404/` 以 308 规范化到 `/404`。
+4. 两层规则方向相反，形成 `/404` 301→`/404/` 308→`/404` 的闭环。
+5. 普通静态预览服务器只做文件查找与 404 fallback，无法复现 Pages 的 HTML extensionless 308；Wrangler Pages runtime 能完整复现生产 301/308 循环。
+
+Cloudflare 官方 Serving Pages 文档说明 Pages 会把 `.html` 路由重定向到无扩展名形式；官方 Functions 路由文档说明 trailing slash 对 Function 匹配通常可选，未命中 Function 后回退到静态资产路由。本项目的全局 middleware 先执行，随后 `context.next()` 进入 Pages 静态资产匹配，和实测完全一致。
+
+### 7A.4 最小本地修复
+
+只修改 `functions/_middleware.js`：在 `shouldUseTrailingSlash()` 中把精确路径 `/404` 排除出“追加尾斜杠”规则。没有增加 `_redirects`、新 Function、catch-all、首页 rewrite、meta refresh 或 JavaScript 跳转。
+
+采用方案 A：
+
+- `/404` 由 Pages 稳定返回 `200` 和顶层 `404.html`；页面仍为 `noindex, follow`。
+- `/404/` 由 Pages 单次 308 到 `/404`。
+- `/404.html` 由 Pages 单次 308 到 `/404`。
+- 普通未知 URL 继续返回真实 404。
+
+该修复让 Pages 自己保有静态 HTML 的规范化权，只取消 middleware 中与平台方向冲突的一个特殊路径规则。无需 Cloudflare Dashboard、Zone、DNS、SSL 或 Single Redirect 配置。
+
+### 7A.5 Wrangler Pages 修复前后矩阵
+
+使用现有缓存中的 Wrangler `4.113.0`，以 `wrangler pages dev dist --local-protocol=https` 启动真实 Pages/Functions runtime；通过本地解析把 `algodrills.com:8788` 指向 `127.0.0.1`，使 middleware 看到与生产一致的 HTTPS canonical host，全程没有访问生产域名。
+
+| 路径 | 修复前 Wrangler | 修复后 Wrangler | 结论 |
+| --- | --- | --- | --- |
+| `/404` | `301 → /404/` | `200`，无 Location | 稳定显式错误页 |
+| `/404/` | `308 → /404 → 301 → /404/` | `308 → /404`，随后 200 | 单跳，无循环 |
+| `/404.html` | `308 → /404 → 301 → /404/` | `308 → /404`，随后 200 | 单跳，无循环 |
+| `/missing-page` | `301 → /missing-page/ → 404` | 相同 | 未知路径策略不变 |
+| `/missing-page/` | `404` | `404` | 真实 404 保持 |
+| `/missing-page?ref=audit` | `301 → /missing-page/?ref=audit → 404` | 相同 | Query 保留 |
+| `/missing/nested/path/` | `404` | `404` | 嵌套未知路径保持 |
+| `/square-root/` | `200` | `200` | 正式页面不变 |
+| `/square-root` | `301 → /square-root/` | 相同 | 正式尾斜杠策略不变 |
+| `/` | `200` | `200` | 首页不变 |
+| `/sitemap.xml` | `200` | `200` | 集合不变 |
+| `/robots.txt` | `200` | `200` | 声明不变 |
+| `/images/algodrills-social.png` | `200 image/png` | `200 image/png` | 社交图不变 |
+
+本地 `/404` 最终 HTML 和普通未知路径的 404 HTML 均包含自定义 H1、普通 Return home 链接和 `noindex, follow`；均无 canonical、`og:url`、`og:image`、`twitter:image`、meta refresh 或 JavaScript 自动跳转。
+
+### 7A.6 SEO、构建与视觉回归
+
+- `npm run validate`：通过。
+- 连续两次 `npm run build`：均构建 15 篇文章和 20 个正式页面；全 `dist` 聚合 SHA-256 均为 `574ec2cf10177896b1ac5747ffa1d1879b99ab866d5232858fb66012f4c5baf8`。
+- `npm run audit:seo`：通过；20 个 indexable 页面、342 条内部链接、broken/redirecting internal links/orphan 均为 0。
+- sitemap 仍为 20 个唯一 URL；20/20 canonical、title、description、OG、Twitter 均未变化。
+- `/square-root/` 构建哈希保持 `c1a0ff4f8c3b2bcc9d5876af7cf8416726d4bea49198be07f7cfbfd1d425c81c`；正文、公式、代码、H1、canonical 和索引策略未变化。
+- 社交 PNG/SVG 哈希分别保持 `48ff029c1787ab904d7488ab2cc9b02add4abf6cf2f7644cf6a18b6af66a590b` 与 `049f37ab1aa8fb4d7f8fee76fd968a059f0127afa36bbb3ab15b345801d7c783`。
+- `git diff --check` 无输出。
+- 1440×900 与 390×844 下检查普通未知路径、稳定 `/404`、首页和 `/square-root/`：无全页横向溢出、重叠、破图、metadata 泄漏或自动跳转；正式页面无视觉回归。控制台仅在真实未知路径上记录预期 HTTP 404，显式 `/404` 和正式页面无 error/warning。
+
+### 7A.7 本轮修改与停止点
+
+本轮仅有两个已跟踪文件修改：
+
+- `functions/_middleware.js`：增加精确 `/404` 尾斜杠例外。
+- `reports/ahrefs-technical-seo-audit-2026-07-22.md`：追加本节诊断、修复和验证证据。
+
+两次构建没有造成 `dist` 差异。GSC 周报仍为唯一未跟踪文件。修复可以完全在仓库层完成，不需要 Cloudflare 配置或人工规则决定；下一步如需发布，必须另行确认，本轮在未暂存状态停止。
+
 ## 8. Sitemap、canonical、robots、H1 与内链
 
 - 生产 sitemap：HTTP 200，20 个 URL，20 个唯一 URL；最终构建相同。

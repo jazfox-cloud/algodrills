@@ -20,6 +20,7 @@ export async function onRequest(context) {
 
 function shouldUseTrailingSlash(pathname) {
   if (pathname === "/") return false;
+  if (pathname === "/404") return false;
   if (pathname.endsWith("/")) return false;
   return !pathname.split("/").pop().includes(".");
 }
