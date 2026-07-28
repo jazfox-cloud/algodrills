@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Weighted Random Selection: Picking Values by Distribution</title>
-  <meta name="description" content="Implement weighted random selection with prefix sums and binary search, then handle invalid weights, floating-point boundaries, and repeated draws.">
+  <meta name="description" content="Use prefix sums and binary search to sample by weight, then handle zero weights, repeated picks, and floating-point boundary mistakes.">
   <link rel="canonical" href="https://algodrills.com/weighted-random/">
   <meta property="og:url" content="https://algodrills.com/weighted-random/">
   <meta property="og:title" content="Weighted Random Selection: Picking Values by Distribution">
-  <meta property="og:description" content="Implement weighted random selection with prefix sums and binary search, then handle invalid weights, floating-point boundaries, and repeated draws.">
+  <meta property="og:description" content="Use prefix sums and binary search to sample by weight, then handle zero weights, repeated picks, and floating-point boundary mistakes.">
   <meta property="og:type" content="article">
   <meta property="og:image" content="https://algodrills.com/images/algodrills-social.png">
   <meta property="og:image:width" content="1200">
@@ -19,7 +19,7 @@
   <meta name="twitter:image" content="https://algodrills.com/images/algodrills-social.png">
   <meta name="twitter:image:alt" content="AlgoDrills — Algorithm Practice, Explained Clearly">
   <meta name="twitter:title" content="Weighted Random Selection: Picking Values by Distribution">
-  <meta name="twitter:description" content="Implement weighted random selection with prefix sums and binary search, then handle invalid weights, floating-point boundaries, and repeated draws.">
+  <meta name="twitter:description" content="Use prefix sums and binary search to sample by weight, then handle zero weights, repeated picks, and floating-point boundary mistakes.">
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -90,28 +90,90 @@
     <main>
       <article class="article">
         <h1>Weighted Random Selection: Picking Values by Distribution</h1>
-<p>Weighted random selection appears in interview questions, ranking systems, simulations, games, and load balancing. The goal is to choose an item randomly, but not uniformly: items with higher weights should be selected more often.</p>
+<p>Weighted random selection is a common interview problem because it blends probability, arrays, prefix sums, and search. The task sounds random, but the implementation is mostly deterministic bookkeeping: turn weights into ranges, generate one target number, and find which range owns it.</p>
 <h2>Problem</h2>
-<p>Given items and positive weights, return one item at random according to the weight distribution.</p>
+<p>Given an array of items and a matching array of non-negative weights, return an item so that each item's selection probability is proportional to its weight.</p>
 <p>For example:</p>
 <pre><code>items   = [A, B, C]
 weights = [2, 3, 5]</code></pre>
-<p>The total weight is <code>10</code>, so <code>A</code> should be selected about 20% of the time, <code>B</code> about 30%, and <code>C</code> about 50%.</p>
-<h2>Core Idea: Prefix Sums</h2>
-<p>Convert the weights into cumulative ranges:</p>
+<p>The total weight is <code>10</code>, so a correct implementation should choose:</p>
+<ul><li><code>A</code> about 20% of the time</li><li><code>B</code> about 30% of the time</li><li><code>C</code> about 50% of the time</li></ul>
+<p>If a weight is <code>0</code>, that item should never be picked.</p>
+<h2>Why Prefix Sums Work</h2>
+<p>The simplest way to think about the distribution is to convert it into a line of numbered slots:</p>
 <pre><code>A: 1..2
 B: 3..5
 C: 6..10</code></pre>
-<p>Then generate a random number between <code>1</code> and the total weight. The range that contains that number determines the selected item.</p>
-<h2>Linear Scan Approach</h2>
-<ul><li>Build a running total of weights.</li><li>Generate a random integer from <code>1</code> to <code>totalWeight</code>.</li><li>Scan the prefix sums from left to right.</li><li>Return the first item whose prefix sum is greater than or equal to the random number.</li></ul>
-<p>This is simple and works well for small lists.</p>
-<h2>Binary Search Optimization</h2>
-<p>If selection happens many times, precompute the prefix sums once. Then use binary search to find the first prefix sum that is at least the random target.</p>
-<p>This changes each selection from <code>O(N)</code> to <code>O(log N)</code>.</p>
+<p>Now every slot is equally likely. If the random target is <code>4</code>, the answer is <code>B</code>. If the target is <code>9</code>, the answer is <code>C</code>.</p>
+<p>That means the problem has two clear steps:</p>
+<ul><li>build cumulative weights</li><li>find the first cumulative value that is at least the random target</li></ul>
+<h2>Preprocessing</h2>
+<p>Create a prefix-sum array where each position stores the total weight up to that item:</p>
+<pre><code>weights = [2, 3, 5]
+prefix  = [2, 5, 10]</code></pre>
+<p>This array is sorted automatically as long as all weights are non-negative, which is exactly what makes binary search possible.</p>
+<h2>Linear Scan Solution</h2>
+<p>The most direct implementation is:</p>
+<ul><li>compute the total weight</li><li>generate a random integer from <code>1</code> to <code>totalWeight</code></li><li>walk through the prefix sums from left to right</li><li>return the first index whose prefix sum is at least the target</li></ul>
+<p>Example:</p>
+<pre><code>prefix = [2, 5, 10]
+target = 5</code></pre>
+<p>The first prefix sum that is at least <code>5</code> is <code>5</code>, so the selected item is <code>B</code>.</p>
+<p>This approach is easy to explain and often enough for a first-pass interview answer.</p>
+<h2>Faster Repeated Sampling with Binary Search</h2>
+<p>If the same distribution is queried many times, the expensive part should not be repeated. Build the prefix sums once, then use binary search for every pick.</p>
+<pre><code>prefix = [2, 5, 10]
+target = 7</code></pre>
+<p>Binary search finds the leftmost prefix sum greater than or equal to <code>7</code>, which is <code>10</code>, so the selected item is <code>C</code>.</p>
+<p>This reduces each draw from <code>O(N)</code> to <code>O(log N)</code> after <code>O(N)</code> preprocessing.</p>
+<h2>Reference Implementation</h2>
+<pre><code>buildPicker(weights):
+    prefix = []
+    running = 0
+
+    for weight in weights:
+        if weight &lt; 0:
+            error
+        running += weight
+        prefix.append(running)
+
+    if running == 0:
+        error
+
+    return prefix, running
+
+pickIndex(prefix, totalWeight):
+    target = randomInteger(1, totalWeight)
+    return lowerBound(prefix, target)</code></pre>
+<p>The key detail is <code>lowerBound</code>: return the first index whose value is at least the target.</p>
+<h2>Common Interview Pitfalls</h2>
+<h3>Off-by-One Boundaries</h3>
+<p>Be consistent about the target range.</p>
+<ul><li>If you generate <code>1..totalWeight</code>, use <code>&gt;= target</code>.</li><li>If you generate <code>0..totalWeight - 1</code>, compare against cumulative ranges built for zero-based intervals.</li></ul>
+<p>Mixing these conventions causes subtle bias.</p>
+<h3>Allowing Negative Weights</h3>
+<p>Negative weights break the model entirely. Prefix sums may stop being sorted, and the idea of probability mass no longer makes sense.</p>
+<p>Reject negative weights early.</p>
+<h3>All-Zero Input</h3>
+<p>If every weight is <code>0</code>, there is no valid probability distribution. Returning an arbitrary item would be wrong.</p>
+<p>Treat this as invalid input.</p>
+<h3>Rebuilding on Every Query</h3>
+<p>If the interviewer says the picker will be called thousands of times, rebuilding prefix sums inside each call is the main optimization miss.</p>
+<p>Build once, sample many times.</p>
+<h2>How to Talk About Randomness</h2>
+<p>Interviewers usually do not expect a proof, but they do expect the core argument:</p>
+<ul><li>each integer target is chosen uniformly</li><li>item <code>i</code> owns exactly <code>weight[i]</code> integer targets</li><li>therefore item <code>i</code> is selected with probability <code>weight[i] / totalWeight</code></li></ul>
+<p>That short explanation is often more important than the code.</p>
+<h2>Follow-Up Variants</h2>
+<p>A good interviewer may extend the problem in one of these directions:</p>
+<ul><li>dynamic updates to weights after construction</li><li>sampling with replacement versus without replacement</li><li>very large weights that require <code>64-bit</code> sums</li><li>floating-point probabilities instead of integers</li></ul>
+<p>For dynamic updates, a Fenwick tree or segment tree becomes more useful because updates and picks can both stay logarithmic.</p>
 <h2>Complexity</h2>
-<p>Building prefix sums takes <code>O(N)</code> time and space.</p>
-<p>Each selection takes <code>O(N)</code> with a linear scan or <code>O(log N)</code> with binary search.</p>
+<ul><li>prefix-sum preprocessing: <code>O(N)</code> time and <code>O(N)</code> space</li><li>one draw with linear scan: <code>O(N)</code></li><li>one draw with binary search: <code>O(log N)</code></li></ul>
+<h2>What to Remember</h2>
+<p>Weighted random selection is mostly a search problem disguised as probability. Once you map weights into cumulative ranges, the rest is straightforward:</p>
+<ul><li>preprocess once with prefix sums</li><li>draw one random target in the total range</li><li>use lower bound to find the owner of that target</li></ul>
+<p>That framing gives you a clean answer for both the baseline solution and the optimized follow-up.</p>
         <aside class="source">
     <h2>Archive Evidence</h2>
     <p><strong>Evidence tier:</strong> Gold</p>
