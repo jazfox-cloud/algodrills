@@ -12,6 +12,8 @@ const site = {
   description: "Independent algorithm interview notes combining verified archive recovery with original learning guides.",
   seoDescription: "Explore archive-backed algorithm interview problems and original guides covering reusable patterns, implementations, complexity, and edge cases.",
   baseUrl: normalizeBaseUrl(process.env.SITE_URL || "https://algodrills.com"),
+  analyticsMeasurementId: "G-2YQHQBV332",
+  canonicalHost: "algodrills.com",
 };
 site.socialImageUrl = `${site.baseUrl}/images/algodrills-social.png`;
 
@@ -176,7 +178,7 @@ function renderIndex(articles) {
     .map(
       (article) => `
         <article class="card">
-          <a href="/${article.slug}/">${escapeHtml(article.title)}</a>
+          <a href="/${article.slug}/" data-analytics-content="article_card" data-analytics-slug="${escapeHtml(article.slug)}" data-analytics-placement="home_grid">${escapeHtml(article.title)}</a>
           <p>${escapeHtml(article.topic)} · ${article.content_type === "original-guide" ? "Original guide" : `${escapeHtml(article.evidence_tier)} archive recovery`}</p>
         </article>`,
     )
@@ -203,7 +205,7 @@ function renderIndex(articles) {
 function renderArticle(article, articles) {
   const related = articles
     .filter((item) => item.slug !== article.slug)
-    .map((item) => `<li><a href="/${item.slug}/">${escapeHtml(item.title)}</a></li>`)
+    .map((item) => `<li><a href="/${item.slug}/" data-analytics-content="related_note" data-analytics-slug="${escapeHtml(item.slug)}" data-analytics-placement="related_notes">${escapeHtml(item.title)}</a></li>`)
     .join("");
 
   return layout({
@@ -254,7 +256,7 @@ function policyPages() {
       slug: "privacy",
       title: "Privacy Policy",
       description: "Read how Algorithm Notes and its hosting, analytics, security, and advertising providers may process visitor and device information.",
-      body: `<h1>Privacy Policy</h1><p>Algorithm Notes does not require accounts or payments to read educational content. Hosting, analytics, and security providers may process IP addresses, browser or device information, requested pages, timestamps, and referral data to operate and protect the site.</p><h2>Advertising cookies</h2><p>Algorithm Notes may use third-party advertising services, including Google AdSense. Third-party vendors, including Google, may use cookies, web beacons, IP addresses, or similar identifiers to serve and measure ads based on a visitor's prior visits to this website or other websites.</p><p>You can control or opt out of personalized Google advertising through <a href="https://adssettings.google.com/">Google Ads Settings</a>. Additional industry opt-out choices are available at <a href="https://www.aboutads.info/choices/">aboutads.info</a>.</p><h2>Contact</h2><p>Privacy questions can be sent to <a href="mailto:hello@algodrills.com">hello@algodrills.com</a>.</p><p>Last updated July 11, 2026.</p>`
+      body: `<h1>Privacy Policy</h1><p>Algorithm Notes does not require accounts or payments to read educational content. Hosting, analytics, and security providers may process IP addresses, browser or device information, requested pages, timestamps, and referral data to operate and protect the site.</p><h2>Analytics choices</h2><p>On algodrills.com, Google Analytics 4 is used only after analytics consent to understand aggregate page visits, content-card clicks, related-note clicks, and site performance. The site does not send user answers, numbers, code, run output, free-form text, email addresses, or names to Google Analytics.</p><p>You can accept, reject, or withdraw analytics consent from the cookie notice or the Cookie Settings link in the footer. Accepting analytics grants analytics storage only; advertising storage, ad user data, and ad personalization stay denied unless a separate advertising consent system is configured.</p><h2>Advertising cookies</h2><p>Algorithm Notes does not currently load Google AdSense or a Google-certified advertising CMP. If advertising is added later, the privacy notice and consent controls should be updated before ad tags are enabled.</p><h2>Contact</h2><p>Privacy questions can be sent to <a href="mailto:hello@algodrills.com">hello@algodrills.com</a>.</p><p>Last updated July 28, 2026.</p>`
     },
     {
       slug: "terms",
@@ -312,6 +314,18 @@ ${robotsTag}${canonicalTags}
 ${socialImageTags}
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    window.gtag = gtag;
+    gtag('consent', 'default', {
+      analytics_storage: 'denied',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      wait_for_update: 500
+    });
+  </script>
   <style>
     :root {
       color-scheme: light;
@@ -347,6 +361,18 @@ ${socialImageTags}
     pre code { border: 0; padding: 0; background: transparent; overflow-wrap: normal; }
     ul { padding-left: 22px; }
     footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+    footer button { appearance: none; border: 0; background: transparent; color: var(--accent); cursor: pointer; font: inherit; padding: 0; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .consent-banner { position: fixed; inset: auto 16px 16px; z-index: 20; display: none; max-width: 720px; margin: 0 auto; padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 14px 40px rgba(23, 32, 51, .18); }
+    .consent-banner.is-visible { display: block; }
+    .consent-banner p { margin: 0 0 12px; color: var(--muted); }
+    .consent-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .consent-actions button { border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text); cursor: pointer; font: inherit; font-weight: 700; min-height: 42px; padding: 8px 14px; }
+    .consent-actions button:first-child { border-color: var(--accent); background: var(--accent); color: #fff; }
+    .consent-actions button:focus-visible, footer button:focus-visible { outline: 3px solid rgba(36, 87, 197, .35); outline-offset: 2px; }
+    @media (max-width: 520px) {
+      .consent-banner { inset: auto 10px 10px; }
+      .consent-actions { display: grid; grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -356,8 +382,125 @@ ${socialImageTags}
       <span>Archive-backed notes · Original guides</span>
     </header>
     <main>${body}</main>
-    <footer>Independent algorithm education with clearly labeled archive recovery and original guides. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://github.com/jazfox-cloud/algodrills">GitHub</a></footer>
+    <footer>Independent algorithm education with clearly labeled archive recovery and original guides. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://github.com/jazfox-cloud/algodrills">GitHub</a> · <button type="button" data-open-analytics-choices>Cookie Settings</button></footer>
   </div>
+  <div class="consent-banner" data-analytics-banner role="dialog" aria-live="polite" aria-label="Analytics choices">
+    <p>Help improve Algorithm Notes with privacy-conscious analytics. We measure aggregate page visits and content navigation after consent, without sending answers, code, numbers, or free-form text.</p>
+    <div class="consent-actions">
+      <button type="button" data-accept-analytics>Accept analytics</button>
+      <button type="button" data-reject-analytics>Reject analytics</button>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var measurementId = "${site.analyticsMeasurementId}";
+      var canonicalHost = "${site.canonicalHost}";
+      var choiceKey = "algodrills_analytics_consent";
+      var scriptLoaded = false;
+      var pageConfigured = false;
+      var selectedContent = {};
+      var banner = document.querySelector("[data-analytics-banner]");
+
+      function isProductionHost() {
+        return window.location.hostname === canonicalHost;
+      }
+
+      function ensureGtag() {
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function gtag() { window.dataLayer.push(arguments); };
+      }
+
+      function updateConsent(analyticsStorage) {
+        ensureGtag();
+        window.gtag("consent", "update", {
+          analytics_storage: analyticsStorage,
+          ad_storage: "denied",
+          ad_user_data: "denied",
+          ad_personalization: "denied"
+        });
+      }
+
+      function loadAnalytics() {
+        if (!isProductionHost()) return;
+        ensureGtag();
+        updateConsent("granted");
+        window.gtag("js", new Date());
+        if (!pageConfigured) {
+          window.gtag("config", measurementId, {
+            anonymize_ip: true,
+            allow_google_signals: false,
+            allow_ad_personalization_signals: false
+          });
+          pageConfigured = true;
+        }
+        if (!scriptLoaded && !document.querySelector('script[src*="googletagmanager.com/gtag/js?id=' + measurementId + '"]')) {
+          var script = document.createElement("script");
+          script.async = true;
+          script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(measurementId);
+          document.head.appendChild(script);
+          scriptLoaded = true;
+        }
+      }
+
+      function hideBanner() {
+        if (banner) banner.classList.remove("is-visible");
+      }
+
+      function showBanner() {
+        if (banner) banner.classList.add("is-visible");
+      }
+
+      function setChoice(choice) {
+        try {
+          window.localStorage.setItem(choiceKey, choice);
+        } catch {}
+        if (choice === "granted") loadAnalytics();
+        else updateConsent("denied");
+        hideBanner();
+      }
+
+      function getChoice() {
+        try {
+          return window.localStorage.getItem(choiceKey);
+        } catch {
+          return null;
+        }
+      }
+
+      document.querySelectorAll("[data-open-analytics-choices]").forEach(function (button) {
+        button.addEventListener("click", showBanner);
+      });
+      document.querySelectorAll("[data-accept-analytics]").forEach(function (button) {
+        button.addEventListener("click", function () { setChoice("granted"); });
+      });
+      document.querySelectorAll("[data-reject-analytics]").forEach(function (button) {
+        button.addEventListener("click", function () { setChoice("denied"); });
+      });
+
+      document.addEventListener("click", function (event) {
+        var link = event.target.closest && event.target.closest("[data-analytics-content]");
+        if (!link || getChoice() !== "granted" || !isProductionHost()) return;
+        var contentType = link.getAttribute("data-analytics-content") || "";
+        var contentSlug = link.getAttribute("data-analytics-slug") || "";
+        var placement = link.getAttribute("data-analytics-placement") || "";
+        var key = contentType + ":" + contentSlug + ":" + placement;
+        if (selectedContent[key]) return;
+        selectedContent[key] = true;
+        ensureGtag();
+        window.gtag("event", "select_content", {
+          content_type: contentType,
+          content_slug: contentSlug,
+          placement: placement,
+          transport_type: "beacon"
+        });
+      });
+
+      var initialChoice = getChoice();
+      if (initialChoice === "granted") loadAnalytics();
+      else if (initialChoice === "denied") updateConsent("denied");
+      else showBanner();
+    })();
+  </script>
 </body>
 </html>`;
 }

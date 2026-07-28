@@ -20,6 +20,18 @@
   <meta name="twitter:image:alt" content="AlgoDrills — Algorithm Practice, Explained Clearly">
   <meta name="twitter:title" content="Weighted Random Selection: Picking Values by Distribution">
   <meta name="twitter:description" content="Implement weighted random selection with prefix sums and binary search, then handle invalid weights, floating-point boundaries, and repeated draws.">
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    window.gtag = gtag;
+    gtag('consent', 'default', {
+      analytics_storage: 'denied',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      wait_for_update: 500
+    });
+  </script>
   <style>
     :root {
       color-scheme: light;
@@ -55,6 +67,18 @@
     pre code { border: 0; padding: 0; background: transparent; overflow-wrap: normal; }
     ul { padding-left: 22px; }
     footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+    footer button { appearance: none; border: 0; background: transparent; color: var(--accent); cursor: pointer; font: inherit; padding: 0; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .consent-banner { position: fixed; inset: auto 16px 16px; z-index: 20; display: none; max-width: 720px; margin: 0 auto; padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 14px 40px rgba(23, 32, 51, .18); }
+    .consent-banner.is-visible { display: block; }
+    .consent-banner p { margin: 0 0 12px; color: var(--muted); }
+    .consent-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .consent-actions button { border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text); cursor: pointer; font: inherit; font-weight: 700; min-height: 42px; padding: 8px 14px; }
+    .consent-actions button:first-child { border-color: var(--accent); background: var(--accent); color: #fff; }
+    .consent-actions button:focus-visible, footer button:focus-visible { outline: 3px solid rgba(36, 87, 197, .35); outline-offset: 2px; }
+    @media (max-width: 520px) {
+      .consent-banner { inset: auto 10px 10px; }
+      .consent-actions { display: grid; grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,9 +121,126 @@ C: 6..10</code></pre>
       </article>
       <nav class="related">
         <h2>More Notes</h2>
-        <ul><li><a href="/algorithm-interview-pattern-roadmap/">Algorithm Interview Pattern Roadmap: What to Practice First</a></li><li><a href="/backtracking-vs-iterative-generation/">Backtracking vs Iterative Generation for Combinatorial Problems</a></li><li><a href="/bitwise-arithmetic/">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/car-race/">Car Race Leaderboard: Tracking the Fastest Car on a Linear Track</a></li><li><a href="/celebrities/">Celebrity Problem: Elimination Strategy for a Directed Knows Graph</a></li><li><a href="/center-points/">Center Points: Midpoints and Geometric Centers in Interview Problems</a></li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/log-every-second/">Log Every Second: Scheduling Repeated Output Without Blocking</a></li><li><a href="/keypad/">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/plus-minus-array/">Plus Minus Array: Reordering Positive and Negative Values</a></li><li><a href="/power-set/">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/rectangles-store/">Rectangles Store: Fast Point Queries Over Overlapping Rectangles</a></li><li><a href="/sort-by-length-then-frequency/">Sort Words by Length and Frequency</a></li></ul>
+        <ul><li><a href="/algorithm-interview-pattern-roadmap/" data-analytics-content="related_note" data-analytics-slug="algorithm-interview-pattern-roadmap" data-analytics-placement="related_notes">Algorithm Interview Pattern Roadmap: What to Practice First</a></li><li><a href="/backtracking-vs-iterative-generation/" data-analytics-content="related_note" data-analytics-slug="backtracking-vs-iterative-generation" data-analytics-placement="related_notes">Backtracking vs Iterative Generation for Combinatorial Problems</a></li><li><a href="/bitwise-arithmetic/" data-analytics-content="related_note" data-analytics-slug="bitwise-arithmetic" data-analytics-placement="related_notes">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/car-race/" data-analytics-content="related_note" data-analytics-slug="car-race" data-analytics-placement="related_notes">Car Race Leaderboard: Tracking the Fastest Car on a Linear Track</a></li><li><a href="/celebrities/" data-analytics-content="related_note" data-analytics-slug="celebrities" data-analytics-placement="related_notes">Celebrity Problem: Elimination Strategy for a Directed Knows Graph</a></li><li><a href="/center-points/" data-analytics-content="related_note" data-analytics-slug="center-points" data-analytics-placement="related_notes">Center Points: Midpoints and Geometric Centers in Interview Problems</a></li><li><a href="/square-root/" data-analytics-content="related_note" data-analytics-slug="square-root" data-analytics-placement="related_notes">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/" data-analytics-content="related_note" data-analytics-slug="insert-interval" data-analytics-placement="related_notes">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/log-every-second/" data-analytics-content="related_note" data-analytics-slug="log-every-second" data-analytics-placement="related_notes">Log Every Second: Scheduling Repeated Output Without Blocking</a></li><li><a href="/keypad/" data-analytics-content="related_note" data-analytics-slug="keypad" data-analytics-placement="related_notes">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/plus-minus-array/" data-analytics-content="related_note" data-analytics-slug="plus-minus-array" data-analytics-placement="related_notes">Plus Minus Array: Reordering Positive and Negative Values</a></li><li><a href="/power-set/" data-analytics-content="related_note" data-analytics-slug="power-set" data-analytics-placement="related_notes">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/rectangles-store/" data-analytics-content="related_note" data-analytics-slug="rectangles-store" data-analytics-placement="related_notes">Rectangles Store: Fast Point Queries Over Overlapping Rectangles</a></li><li><a href="/sort-by-length-then-frequency/" data-analytics-content="related_note" data-analytics-slug="sort-by-length-then-frequency" data-analytics-placement="related_notes">Sort Words by Length and Frequency</a></li></ul>
       </nav></main>
-    <footer>Independent algorithm education with clearly labeled archive recovery and original guides. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://github.com/jazfox-cloud/algodrills">GitHub</a></footer>
+    <footer>Independent algorithm education with clearly labeled archive recovery and original guides. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://github.com/jazfox-cloud/algodrills">GitHub</a> · <button type="button" data-open-analytics-choices>Cookie Settings</button></footer>
   </div>
+  <div class="consent-banner" data-analytics-banner role="dialog" aria-live="polite" aria-label="Analytics choices">
+    <p>Help improve Algorithm Notes with privacy-conscious analytics. We measure aggregate page visits and content navigation after consent, without sending answers, code, numbers, or free-form text.</p>
+    <div class="consent-actions">
+      <button type="button" data-accept-analytics>Accept analytics</button>
+      <button type="button" data-reject-analytics>Reject analytics</button>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var measurementId = "G-2YQHQBV332";
+      var canonicalHost = "algodrills.com";
+      var choiceKey = "algodrills_analytics_consent";
+      var scriptLoaded = false;
+      var pageConfigured = false;
+      var selectedContent = {};
+      var banner = document.querySelector("[data-analytics-banner]");
+
+      function isProductionHost() {
+        return window.location.hostname === canonicalHost;
+      }
+
+      function ensureGtag() {
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function gtag() { window.dataLayer.push(arguments); };
+      }
+
+      function updateConsent(analyticsStorage) {
+        ensureGtag();
+        window.gtag("consent", "update", {
+          analytics_storage: analyticsStorage,
+          ad_storage: "denied",
+          ad_user_data: "denied",
+          ad_personalization: "denied"
+        });
+      }
+
+      function loadAnalytics() {
+        if (!isProductionHost()) return;
+        ensureGtag();
+        updateConsent("granted");
+        window.gtag("js", new Date());
+        if (!pageConfigured) {
+          window.gtag("config", measurementId, {
+            anonymize_ip: true,
+            allow_google_signals: false,
+            allow_ad_personalization_signals: false
+          });
+          pageConfigured = true;
+        }
+        if (!scriptLoaded && !document.querySelector('script[src*="googletagmanager.com/gtag/js?id=' + measurementId + '"]')) {
+          var script = document.createElement("script");
+          script.async = true;
+          script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(measurementId);
+          document.head.appendChild(script);
+          scriptLoaded = true;
+        }
+      }
+
+      function hideBanner() {
+        if (banner) banner.classList.remove("is-visible");
+      }
+
+      function showBanner() {
+        if (banner) banner.classList.add("is-visible");
+      }
+
+      function setChoice(choice) {
+        try {
+          window.localStorage.setItem(choiceKey, choice);
+        } catch {}
+        if (choice === "granted") loadAnalytics();
+        else updateConsent("denied");
+        hideBanner();
+      }
+
+      function getChoice() {
+        try {
+          return window.localStorage.getItem(choiceKey);
+        } catch {
+          return null;
+        }
+      }
+
+      document.querySelectorAll("[data-open-analytics-choices]").forEach(function (button) {
+        button.addEventListener("click", showBanner);
+      });
+      document.querySelectorAll("[data-accept-analytics]").forEach(function (button) {
+        button.addEventListener("click", function () { setChoice("granted"); });
+      });
+      document.querySelectorAll("[data-reject-analytics]").forEach(function (button) {
+        button.addEventListener("click", function () { setChoice("denied"); });
+      });
+
+      document.addEventListener("click", function (event) {
+        var link = event.target.closest && event.target.closest("[data-analytics-content]");
+        if (!link || getChoice() !== "granted" || !isProductionHost()) return;
+        var contentType = link.getAttribute("data-analytics-content") || "";
+        var contentSlug = link.getAttribute("data-analytics-slug") || "";
+        var placement = link.getAttribute("data-analytics-placement") || "";
+        var key = contentType + ":" + contentSlug + ":" + placement;
+        if (selectedContent[key]) return;
+        selectedContent[key] = true;
+        ensureGtag();
+        window.gtag("event", "select_content", {
+          content_type: contentType,
+          content_slug: contentSlug,
+          placement: placement,
+          transport_type: "beacon"
+        });
+      });
+
+      var initialChoice = getChoice();
+      if (initialChoice === "granted") loadAnalytics();
+      else if (initialChoice === "denied") updateConsent("denied");
+      else showBanner();
+    })();
+  </script>
 </body>
 </html>
