@@ -91,16 +91,25 @@
       <article class="article">
         <h1>Rectangles Store: Fast Point Queries Over Overlapping Rectangles</h1>
 <p>This problem asks you to design a rectangle lookup structure that is efficient both in memory and query time. That combination is what makes it a good interview question: you cannot get away with either a brute-force scan or a giant point-by-point grid.</p>
+<p>In practice, this is the kind of prompt where interviewers care less about naming a specific data structure and more about whether you can turn a two-dimensional geometry question into a small number of ordered one-dimensional checks. That is the main idea to make explicit.</p>
 <h2>Problem</h2>
 <p>You are given:</p>
 <ul><li>one large bounding rectangle</li><li>many rectangles contained inside that bounding rectangle</li></ul>
 <p>You need to support two operations:</p>
 <p>1. initialize the data structure from the bounding box and the rectangle collection 2. answer <code>findRectangleAt(x, y)</code> by returning the topmost rectangle that contains the point, or <code>null</code> if none does</p>
 <p>The tricky part is the scale. The input may contain many rectangles, and the bounding box may be extremely large.</p>
+<h2>What a Strong Answer Should Clarify First</h2>
+<p>Before choosing a data structure, pin down the contract:</p>
+<ul><li>Are rectangles static after initialization, or can they be inserted and removed later?</li><li>What does &quot;topmost&quot; mean when several rectangles contain the same point?</li><li>Are rectangle edges inclusive?</li><li>Are coordinates integers, floating-point values, or both?</li></ul>
+<p>Those details change the best implementation. If updates are rare and queries are frequent, preprocessing is worth more. If updates happen constantly, a heavier dynamic index may be justified.</p>
 <h2>Why the Obvious Solutions Fail</h2>
 <p>Two simple ideas are ruled out:</p>
 <ul><li>Storing the rectangles in a plain list makes each query too slow because you may need to scan every rectangle.</li><li>Mapping every point in the bounding box to a rectangle uses far too much memory when coordinates are large.</li></ul>
 <p>So the real task is to index rectangle boundaries in a way that narrows the candidate set quickly.</p>
+<h2>Baseline Answer</h2>
+<p>The baseline interview answer is usually:</p>
+<p>1. preprocess rectangle boundaries into sorted structures 2. narrow the candidates for <code>x</code> 3. narrow the candidates for <code>y</code> 4. intersect the survivors 5. apply the tie-break rule for the topmost rectangle</p>
+<p>That answer is already much stronger than suggesting a full grid or a linear scan over every rectangle on every query.</p>
 <h2>Core Idea</h2>
 <p>A point <code>(x, y)</code> lies inside a rectangle exactly when all four of these conditions hold:</p>
 <ul><li><code>left &lt;= x</code></li><li><code>right &gt;= x</code></li><li><code>top &lt;= y</code></li><li><code>bottom &gt;= y</code></li></ul>
@@ -108,27 +117,53 @@
 <p>One clean approach is to maintain four sorted collections:</p>
 <ul><li>rectangle left edges</li><li>rectangle right edges</li><li>rectangle top edges</li><li>rectangle bottom edges</li></ul>
 <p>Each entry stores both the edge value and the rectangle id.</p>
+<p>If you want to describe this in implementation-neutral terms, say &quot;four sorted indexes keyed by boundary value.&quot; That leaves room for <code>TreeSet</code>, balanced trees, sorted arrays plus binary search, or an interval tree variant depending on the language and follow-up constraints.</p>
 <h2>Query Strategy</h2>
 <p>For a query point <code>(x, y)</code>, compute four candidate sets:</p>
 <ul><li>rectangles whose left edge is at or before <code>x</code></li><li>rectangles whose right edge is at or after <code>x</code></li><li>rectangles whose top edge is at or above <code>y</code></li><li>rectangles whose bottom edge is at or below <code>y</code></li></ul>
 <p>Any rectangle containing <code>(x, y)</code> must appear in all four sets.</p>
 <p>So the answer is the first rectangle id that appears in every set, using the ordering rule that matches &quot;topmost&quot; in the problem definition.</p>
+<h2>Worked Example</h2>
+<p>Suppose the rectangles are:</p>
+<ul><li><code>R1 = [left=0, right=8, top=0, bottom=8]</code></li><li><code>R2 = [left=2, right=5, top=2, bottom=6]</code></li><li><code>R3 = [left=4, right=7, top=1, bottom=4]</code></li></ul>
+<p>For query point <code>(4, 3)</code>:</p>
+<ul><li>left-edge filter keeps <code>R1</code>, <code>R2</code>, <code>R3</code></li><li>right-edge filter keeps <code>R1</code>, <code>R2</code>, <code>R3</code></li><li>top-edge filter keeps <code>R1</code>, <code>R2</code>, <code>R3</code></li><li>bottom-edge filter keeps <code>R1</code>, <code>R2</code>, <code>R3</code></li></ul>
+<p>All three rectangles contain the point, so geometry alone is not enough. You still need a tie-break rule. For example:</p>
+<ul><li>highest visual layer</li><li>smallest area</li><li>most recently inserted rectangle</li><li>smallest top coordinate, if &quot;topmost&quot; is geometric</li></ul>
+<p>That is why the definition of &quot;topmost&quot; must be clarified early.</p>
 <h2>Why This Works</h2>
 <p>Instead of asking every rectangle whether it contains the point, we first rule out most rectangles using sorted boundary indexes.</p>
 <p>That gives us:</p>
 <ul><li>good memory behavior because we store only rectangle boundaries</li><li>faster point queries because each filter removes impossible candidates early</li></ul>
 <p>The exact implementation can use balanced trees, sorted arrays with binary search, or interval-oriented structures. What matters in an interview is the reduction from geometric containment to four one-dimensional filters.</p>
+<h2>When Sorted Arrays Are Good Enough</h2>
+<p>If rectangles are built once and queried many times, sorted arrays are often the simplest practical answer:</p>
+<ul><li>preprocessing is straightforward</li><li>binary search is easy to explain</li><li>memory usage is predictable</li><li>there is no tree-rotation or balancing complexity</li></ul>
+<p>For a whiteboard or interview setting, that tradeoff is often better than reaching immediately for a more complex dynamic structure.</p>
+<h2>When You Should Suggest a Stronger Structure</h2>
+<p>If the interviewer adds frequent updates or much larger query volume, say so explicitly and upgrade the design:</p>
+<ul><li>interval trees if containment checks dominate</li><li>segment trees or range trees for more structured spatial filtering</li><li>R-trees or spatial indexes if the discussion moves from interview exercise toward production geometry workloads</li></ul>
+<p>That kind of answer shows judgment: you are not pretending one structure is always best.</p>
 <h2>Complexity Discussion</h2>
 <p>If there are <code>N</code> rectangles:</p>
 <ul><li>initialization is roughly <code>O(N log N)</code> if you insert all four edges into sorted structures</li><li>query time depends on how the candidate intersections are implemented</li></ul>
 <p>The archived solution uses sorted sets plus list intersection checks. That is conceptually sound, though there is still room to improve the query path with more specialized indexing if the interviewer wants stronger asymptotics.</p>
+<p>Another useful refinement is to store candidate ids in compact integer sets so intersections are cheaper. The main performance question is not only &quot;how fast is search?&quot; but also &quot;how large are the intermediate candidate lists?&quot;</p>
 <h2>Edge Cases</h2>
-<ul><li>A query point may be outside the bounding box.</li><li>Multiple rectangles may overlap the same point.</li><li>Rectangles may share edges.</li><li>The topmost rectangle rule needs a deterministic interpretation.</li></ul>
+<ul><li>A query point may be outside the bounding box.</li><li>Multiple rectangles may overlap the same point.</li><li>Rectangles may share edges.</li><li>The topmost rectangle rule needs a deterministic interpretation.</li><li>Degenerate rectangles may have zero width or zero height.</li><li>Coordinate comparisons may become tricky if floating-point inputs are allowed.</li></ul>
 <p>Clarifying that last point is important. If &quot;topmost&quot; means smallest top coordinate, highest z-index, or most recently inserted rectangle, the data structure may need different tie-breaking.</p>
+<h2>Common Mistakes</h2>
+<ul><li>Building a dense coordinate map for a huge bounding box</li><li>Forgetting to define whether boundary points count as inside</li><li>Returning the first matching rectangle without a stable tie-break rule</li><li>Optimizing search while ignoring the cost of intersecting large candidate sets</li><li>Assuming a dynamic structure is needed before the prompt actually asks for updates</li></ul>
+<h2>Interview-Ready Explanation</h2>
+<p>If you need a concise verbal answer, this is a good version:</p>
+<p>&gt; I would avoid a point-by-point grid because the bounding box can be huge, and I would avoid scanning every rectangle per query because that makes queries linear. Instead, I would preprocess rectangle boundaries into sorted indexes, use the query point to filter rectangles on left, right, top, and bottom constraints, intersect those candidate sets, and then apply a deterministic topmost rule. If rectangles are static, sorted arrays plus binary search are probably the simplest strong answer. If updates are frequent, I would switch to a more dynamic interval-oriented structure.</p>
+<p>That explanation is usually enough to show both the core insight and the tradeoff thinking.</p>
 <h2>Interview Follow-Up</h2>
 <p>Good follow-up questions include:</p>
 <ul><li>How many queries will we run after initialization?</li><li>Are rectangles static, or do insertions and deletions happen later?</li><li>What exactly defines the topmost rectangle?</li><li>Do we need worst-case guarantees or just practical speed?</li></ul>
 <p>The strongest answer is not just &quot;use a TreeSet.&quot; It is showing that point containment can be decomposed into four ordered constraints and that a sparse index is better than a dense grid for large coordinate spaces.</p>
+<h2>Final Takeaway</h2>
+<p>This problem is really about choosing the right abstraction. Rectangles look two-dimensional, but point containment reduces cleanly to four ordered comparisons. Once you state that reduction clearly, the rest of the answer becomes an informed tradeoff between simpler static indexes and heavier dynamic spatial structures.</p>
         <aside class="source">
     <h2>Archive Evidence</h2>
     <p><strong>Evidence tier:</strong> Gold</p>
