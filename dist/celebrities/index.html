@@ -94,31 +94,92 @@
 <p>A celebrity, if one exists, has two properties:</p>
 <ul><li>Everyone knows the celebrity.</li><li>The celebrity knows nobody else.</li></ul>
 <p>The task is to identify the celebrity using as few relationship checks as possible.</p>
+<h2>Clarify the Contract First</h2>
+<p>Before jumping into the algorithm, make the interview assumptions explicit:</p>
+<ul><li>There may be zero or one celebrity.</li><li><code>knows(a, b)</code> can be queried in constant time.</li><li>A person is not treated as &quot;knowing themselves&quot; for the decision rule.</li><li>The goal is to minimize relationship checks, not just write working code.</li></ul>
+<p>That framing matters because it explains why a second verification pass is required. The first pass only finds the last surviving candidate.</p>
 <h2>Naive Approach</h2>
 <p>The direct approach checks every person against every other person.</p>
 <p>For each candidate <code>c</code>:</p>
 <ul><li>Verify that every other person knows <code>c</code>.</li><li>Verify that <code>c</code> does not know any other person.</li></ul>
 <p>This works, but it costs <code>O(N^2)</code> checks.</p>
+<p>That answer is correct, but it misses the elimination structure hidden in the problem. Interviewers usually expect you to move past this quickly.</p>
 <h2>Key Elimination Insight</h2>
 <p>You can rule people out one comparison at a time.</p>
 <p>Suppose you compare <code>a</code> and <code>b</code>:</p>
 <ul><li>If <code>a</code> knows <code>b</code>, then <code>a</code> cannot be the celebrity.</li><li>If <code>a</code> does not know <code>b</code>, then <code>b</code> cannot be the celebrity.</li></ul>
 <p>Either way, one person is eliminated immediately.</p>
+<p>This is the whole trick. A single comparison cannot prove who the celebrity is, but it can prove that one of the two people is definitely not the celebrity.</p>
 <h2>Linear Candidate Selection</h2>
 <p>Start with candidate <code>0</code>. Scan through the group from left to right:</p>
 <ul><li>If the current candidate knows person <code>i</code>, replace the candidate with <code>i</code>.</li><li>Otherwise keep the current candidate.</li></ul>
 <p>After one pass, only one possible celebrity remains.</p>
 <p>This pass does not prove the candidate is a celebrity. It only finds the only person who still could be one.</p>
+<h2>Worked Example</h2>
+<p>Suppose there are four people: <code>0</code>, <code>1</code>, <code>2</code>, and <code>3</code>.</p>
+<p>Assume:</p>
+<ul><li><code>0</code> knows <code>1</code></li><li><code>1</code> knows <code>3</code></li><li><code>2</code> knows <code>3</code></li><li><code>3</code> knows nobody</li><li>everyone except <code>3</code> knows <code>3</code></li></ul>
+<p>Now run the elimination pass:</p>
+<p>1. candidate = <code>0</code> 2. compare <code>0</code> with <code>1</code></p>
+<p>3. compare <code>1</code> with <code>2</code></p>
+<p>4. compare <code>1</code> with <code>3</code></p>
+<ul><li><code>0</code> knows <code>1</code>, so <code>0</code> cannot be the celebrity</li><li>candidate becomes <code>1</code></li><li>if <code>1</code> does not know <code>2</code>, then <code>2</code> cannot be the celebrity</li><li>candidate stays <code>1</code></li><li><code>1</code> knows <code>3</code>, so <code>1</code> cannot be the celebrity</li><li>candidate becomes <code>3</code></li></ul>
+<p>At that point, <code>3</code> is the only remaining possibility.</p>
+<p>You still need to verify:</p>
+<ul><li><code>0</code>, <code>1</code>, and <code>2</code> all know <code>3</code></li><li><code>3</code> knows none of <code>0</code>, <code>1</code>, or <code>2</code></li></ul>
+<p>Only then can you return <code>3</code>.</p>
 <h2>Verification Pass</h2>
 <p>Once the candidate is chosen, run a second pass to verify both celebrity conditions:</p>
 <ul><li>Every other person must know the candidate.</li><li>The candidate must not know any other person.</li></ul>
 <p>If either condition fails, there is no celebrity.</p>
+<h2>Why the Elimination Pass Is Safe</h2>
+<p>The elimination logic works because each comparison answers one binary question with a guaranteed discard:</p>
+<ul><li>if <code>a</code> knows <code>b</code>, then <code>a</code> fails the &quot;knows nobody&quot; rule</li><li>if <code>a</code> does not know <code>b</code>, then <code>b</code> fails the &quot;everyone knows them&quot; rule</li></ul>
+<p>So every step shrinks the candidate pool by one without ever discarding a real celebrity.</p>
+<p>That is the invariant to say out loud in an interview.</p>
+<h2>Matrix View</h2>
+<p>Some interviewers phrase this problem with an <code>N x N</code> boolean matrix where <code>M[a][b] = 1</code> means person <code>a</code> knows person <code>b</code>.</p>
+<p>In that version, a celebrity row and column have a distinctive shape:</p>
+<ul><li>the celebrity row is all <code>0</code>s except possibly the diagonal</li><li>the celebrity column is all <code>1</code>s except the diagonal</li></ul>
+<p>The elimination pass avoids scanning the whole matrix up front. It uses selected row/column comparisons to identify the only column that might satisfy the rule.</p>
+<h2>Reference Pseudocode</h2>
+<pre><code>findCelebrity(n):
+    candidate = 0
+
+    for i from 1 to n - 1:
+        if knows(candidate, i):
+            candidate = i
+
+    for i from 0 to n - 1:
+        if i == candidate:
+            continue
+
+        if knows(candidate, i):
+            return -1
+
+        if not knows(i, candidate):
+            return -1
+
+    return candidate</code></pre>
+<p>The return value <code>-1</code> here means no celebrity exists.</p>
 <h2>Complexity</h2>
 <p>The elimination pass takes <code>O(N)</code> checks.</p>
 <p>The verification pass also takes <code>O(N)</code> checks.</p>
 <p>So the overall time complexity is <code>O(N)</code>, with <code>O(1)</code> extra space.</p>
+<p>In terms of relationship checks, the first pass uses <code>N - 1</code> queries, and the verification pass uses up to <code>2(N - 1)</code> more. That keeps the total linear.</p>
+<h2>Common Mistakes</h2>
+<ul><li>Returning the candidate immediately after the first pass without verification</li><li>Forgetting that the problem may have no celebrity at all</li><li>Mixing up the direction of <code>knows(a, b)</code></li><li>Claiming <code>O(1)</code> time because only one candidate is tracked</li><li>Writing a symmetric friendship-style interpretation even though <code>knows</code> is directional</li></ul>
+<p>The direction issue is especially common. This is not an undirected graph problem.</p>
+<h2>Good Follow-Ups</h2>
+<p>If the interviewer pushes further, these are reasonable extensions:</p>
+<ul><li>What changes if <code>knows(a, b)</code> is very expensive?</li><li>How would you cache repeated queries?</li><li>What if you must return all people who satisfy a weaker variant of the rule?</li><li>What if the graph is streamed instead of fully queryable?</li></ul>
+<p>Those follow-ups usually turn the discussion from pure elimination into API-cost reasoning or graph modeling.</p>
 <h2>Why Interviewers Like It</h2>
 <p>This problem tests whether you can replace brute force with invariant-based reasoning. The important step is recognizing that each comparison can permanently discard one candidate, which turns a quadratic search into a linear one.</p>
+<h2>Interview-Ready Summary</h2>
+<p>The clean answer is:</p>
+<ul><li>use one pass to eliminate impossible candidates</li><li>use one more pass to verify the final candidate</li><li>return the candidate only if both celebrity conditions hold</li></ul>
+<p>That gives <code>O(N)</code> time, <code>O(1)</code> space, and a short proof of correctness based on discarding one non-celebrity per comparison.</p>
         <aside class="source">
     <h2>Archive Evidence</h2>
     <p><strong>Evidence tier:</strong> Gold</p>
