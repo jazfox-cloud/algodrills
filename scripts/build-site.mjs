@@ -305,6 +305,10 @@ function layout({ title, description, canonicalPath, body, pageType = "website",
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="/favicon.ico?v=3" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png?v=3">
+  <link rel="icon" type="image/png" sizes="16x16" href="/brand/favicon-16.png?v=3">
+  <link rel="apple-touch-icon" sizes="32x32" href="/brand/favicon-32.png?v=3">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
 ${robotsTag}${canonicalTags}
