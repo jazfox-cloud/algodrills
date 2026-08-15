@@ -94,16 +94,32 @@
     <main>
       <article class="article">
         <h1>Plus Minus Array: Reordering Positive and Negative Values</h1>
-<p>Array questions built around positive and negative numbers usually test whether you can transform an input in place without losing track of ordering rules. A common version asks you to rearrange values so that numbers with different signs are grouped or alternated in a predictable way.</p>
+<p>Array questions built around positive and negative numbers usually test whether you can transform an input without losing track of ordering rules. A common version asks you to rearrange values so that negatives and positives are either grouped or alternated in a predictable way.</p>
 <h2>Problem</h2>
 <p>Given an array containing positive and negative integers, produce a new arrangement that satisfies a sign rule.</p>
 <p>Typical interview variants include:</p>
 <ul><li>move all negative values before positive values</li><li>alternate negative and positive values as much as possible</li><li>preserve relative order when the interviewer explicitly requires stability</li></ul>
-<p>Because the title alone does not define one exact variant, the most useful interview preparation is to know the two standard approaches: partition first, then optionally interleave.</p>
+<p>Because the title alone does not define one exact variant, the most useful interview preparation is to know the contract questions, the baseline partition strategy, and the follow-up for stable alternation.</p>
+<h2>Clarify the Variant First</h2>
+<p>Before you start coding, pin down four details:</p>
+<ul><li>Should negatives come first, or should the array alternate signs?</li><li>If counts are uneven, should extra values stay at the end?</li><li>Does <code>0</code> count as positive, negative, or a separate category?</li><li>Must the original left-to-right order of negatives and positives be preserved?</li></ul>
+<p>Those questions matter because different answers lead to different implementations. A two-pointer swap is fine for an unstable partition, but it is the wrong tool if the interviewer asks for stable ordering.</p>
 <h2>Variant 1: Partition By Sign</h2>
 <p>If the task is only to group negatives on one side and positives on the other, use a two-pointer scan.</p>
 <ul><li>Start one pointer at the left and another at the right.</li><li>Move the left pointer forward while it already points to a negative number.</li><li>Move the right pointer backward while it already points to a positive number.</li><li>When both pointers stop on misplaced values, swap them.</li></ul>
 <p>This finishes in <code>O(N)</code> time and uses <code>O(1)</code> extra space.</p>
+<h3>Why This Works</h3>
+<p>The left pointer searches for a positive value that belongs on the right side. The right pointer searches for a negative value that belongs on the left side. Every swap fixes two misplaced positions at once.</p>
+<p>This is the best answer when:</p>
+<ul><li>the interviewer does not require stable order</li><li>only the final sign partition matters</li><li>in-place space usage is more important than preserving the original sequence</li></ul>
+<h2>Worked Partition Example</h2>
+<p>Suppose the input is:</p>
+<pre><code>[4, -3, 2, -1, -7, 6]</code></pre>
+<p>One valid partition result is:</p>
+<pre><code>[-7, -3, -1, 2, 4, 6]</code></pre>
+<p>Another valid result is:</p>
+<pre><code>[-1, -3, -7, 2, 4, 6]</code></pre>
+<p>Both are correct if stability is not required. That is an important interview point: many array-reordering problems allow multiple valid outputs.</p>
 <h2>Variant 2: Alternate Signs</h2>
 <p>If the task asks for an alternating pattern such as negative, positive, negative, positive, it helps to split the work into two phases.</p>
 <p>1. Partition the array by sign. 2. Count how many negatives and positives you have. 3. Interleave the two groups until one side runs out. 4. Append any remaining values at the end.</p>
@@ -112,15 +128,84 @@
 <p>can become:</p>
 <pre><code>[-5, 4, -2, 7, -1, 9]</code></pre>
 <p>There are multiple valid outputs unless the problem also requires stable ordering.</p>
+<h3>A Clean Stable Construction</h3>
+<p>If the interviewer wants a stable alternating result, the easiest correct answer is:</p>
+<p>1. scan the input once and store negatives in one list 2. store positives in another list 3. write values back by alternating from the two lists 4. append leftover values from the longer list</p>
+<p>That keeps the original relative order inside each sign group.</p>
+<p>Example:</p>
+<pre><code>input      = [3, -2, -5, 6, -1, 4]
+negatives  = [-2, -5, -1]
+positives  = [3, 6, 4]
+result     = [-2, 3, -5, 6, -1, 4]</code></pre>
+<p>This is usually the safest answer when correctness and clarity matter more than squeezing space to <code>O(1)</code>.</p>
 <h2>Stability Matters</h2>
 <p>The main follow-up question is whether you must preserve the original left-to-right order within the negative group and within the positive group.</p>
 <ul><li>If stability is not required, in-place swaps are enough.</li><li>If stability is required, a simple extra-array solution is often clearer.</li></ul>
 <p>A stable solution usually collects negatives and positives separately, then writes them back in the required pattern. That approach is easy to reason about and still runs in linear time, although it uses <code>O(N)</code> extra space.</p>
+<h2>Reference Pseudocode</h2>
+<h3>Unstable Partition</h3>
+<pre><code>partitionBySign(arr):
+    left = 0
+    right = arr.length - 1
+
+    while left &lt;= right:
+        while left &lt;= right and arr[left] &lt; 0:
+            left += 1
+
+        while left &lt;= right and arr[right] &gt;= 0:
+            right -= 1
+
+        if left &lt; right:
+            swap(arr[left], arr[right])
+
+    return arr</code></pre>
+<p>This example treats <code>0</code> as non-negative. That rule is not universal, so say it out loud.</p>
+<h3>Stable Alternation</h3>
+<pre><code>alternateStable(arr):
+    negatives = []
+    positives = []
+
+    for value in arr:
+        if value &lt; 0:
+            negatives.append(value)
+        else:
+            positives.append(value)
+
+    result = []
+    i = 0
+    j = 0
+
+    while i &lt; negatives.length and j &lt; positives.length:
+        result.append(negatives[i])
+        result.append(positives[j])
+        i += 1
+        j += 1
+
+    while i &lt; negatives.length:
+        result.append(negatives[i])
+        i += 1
+
+    while j &lt; positives.length:
+        result.append(positives[j])
+        j += 1
+
+    return result</code></pre>
+<p>If the interview requires the output to start with a positive number instead, only the merge order changes.</p>
+<h2>Choosing Between In-Place and Stable</h2>
+<p>This problem is often less about one perfect algorithm and more about recognizing the tradeoff:</p>
+<ul><li>use two pointers for <code>O(1)</code> extra space when order does not matter</li><li>use separate lists for the clearest stable solution</li><li>discuss harder in-place stable variants only if the interviewer explicitly pushes for them</li></ul>
+<p>Trying to force a stable alternating arrangement in place often leads to rotations, repeated shifts, or other logic that is harder to implement and explain under interview time pressure.</p>
 <h2>Edge Cases</h2>
 <ul><li>Arrays containing only positive numbers</li><li>Arrays containing only negative numbers</li><li>Zero values, which should be classified explicitly based on the problem statement</li><li>Unequal counts, where one sign must occupy the tail of the result</li></ul>
+<h2>Common Mistakes</h2>
+<ul><li>assuming there is only one valid output</li><li>forgetting to define how <code>0</code> should be treated</li><li>claiming a stable order when swaps actually changed relative positions</li><li>alternating signs without explaining what happens when one side runs out</li><li>jumping to a complicated in-place stable method before giving the simpler linear-space answer</li></ul>
+<p>The stability mistake is especially common. A two-pointer partition is fast, but it absolutely does not preserve original order.</p>
 <h2>Complexity</h2>
-<p>Simple partitioning runs in <code>O(N)</code> time with <code>O(1)</code> extra space.</p>
-<p>Stable alternating output usually runs in <code>O(N)</code> time with <code>O(N)</code> extra space.</p>
+<ul><li>simple partitioning: <code>O(N)</code> time and <code>O(1)</code> extra space</li><li>stable grouping or stable alternation with helper arrays: <code>O(N)</code> time and <code>O(N)</code> extra space</li></ul>
+<h2>Interview-Ready Summary</h2>
+<p>The strongest concise answer is:</p>
+<ul><li>first clarify whether the task is partitioning or strict alternation</li><li>ask whether order must stay stable</li><li>if order does not matter, use a two-pointer partition in linear time and constant space</li><li>if order must stay stable, collect negatives and positives separately and merge them back in the required pattern</li></ul>
+<p>That shows you understand both the algorithm and the hidden contract behind the prompt.</p>
         <aside class="source">
     <h2>Archive Evidence</h2>
     <p><strong>Evidence tier:</strong> Gold</p>
