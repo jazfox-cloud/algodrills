@@ -95,18 +95,88 @@
       <article class="article">
         <h1>How to Compute a Square Root Without Calling a Library Function</h1>
 <p>Implementing square root without calling a built-in function is a useful interview exercise because it combines numerical reasoning, boundary handling, and safe arithmetic. The problem usually appears in one of two forms: return the integer part of the square root, or compute a floating-point approximation to a chosen precision.</p>
-<h2>Approach 1: Binary Search</h2>
+<h2>Clarify the Contract First</h2>
+<p>Before choosing an algorithm, ask what the function should return:</p>
+<ul><li>For an integer input, should the answer be <code>floor(sqrt(N))</code>?</li><li>Should a non-perfect square produce a decimal approximation?</li><li>How should negative inputs be handled?</li><li>If the result is approximate, what error tolerance is acceptable?</li></ul>
+<p>Those details change both the algorithm and its stopping condition. In most interview versions, an integer square-root function accepts <code>N &gt;= 0</code> and returns the greatest integer <code>r</code> such that <code>r * r &lt;= N</code>.</p>
+<h2>Approach 1: Binary Search for an Integer Square Root</h2>
 <p>If the goal is to compute <code>floor(sqrt(N))</code> for a non-negative integer <code>N</code>, binary search is a direct and reliable approach. The answer must lie in a bounded interval, and the square function is monotonic on non-negative numbers.</p>
-<p>For <code>N &gt;= 1</code>, the search interval can start as <code>[1, N]</code>. For each midpoint, compare <code>mid * mid</code> against <code>N</code> and move the search boundaries accordingly.</p>
-<h2>Binary Search Details</h2>
-<ul><li>Set <code>low = 0</code> and <code>high = N</code>.</li><li>Compute <code>mid = low + (high - low) / 2</code>.</li><li>If <code>mid * mid == N</code>, return <code>mid</code>.</li><li>If <code>mid * mid &lt; N</code>, store <code>mid</code> as the current best answer and move right.</li><li>If <code>mid * mid &gt; N</code>, move left.</li></ul>
-<p>One practical detail matters: <code>mid * mid</code> can overflow for large integers. A safer comparison is to use division, such as <code>mid &lt;= N / mid</code>, instead of multiplying first.</p>
-<h2>Approach 2: Newton's Method</h2>
+<p>Handle <code>0</code> and <code>1</code> directly. For <code>N &gt;= 2</code>, the answer lies in <code>[1, floor(N / 2)]</code>, so there is no reason to search all the way to <code>N</code>.</p>
+<h3>Binary Search Details</h3>
+<ul><li>Set <code>low = 1</code> and <code>high = floor(N / 2)</code>.</li><li>Compute <code>mid = low + (high - low) / 2</code>.</li><li>If <code>mid &lt;= N / mid</code>, store <code>mid</code> as the current best answer and move right.</li><li>Otherwise, move left.</li><li>When the search ends, return the best valid midpoint.</li></ul>
+<p>The division comparison matters. In a fixed-width integer type, <code>mid * mid</code> may overflow before it is compared with <code>N</code>. Comparing <code>mid &lt;= N / mid</code> expresses the same condition without performing the risky multiplication.</p>
+<h3>Reference Pseudocode</h3>
+<pre><code>integerSquareRoot(n):
+    if n &lt; 0:
+        error &quot;square root is undefined for negative real numbers&quot;
+
+    if n &lt; 2:
+        return n
+
+    low = 1
+    high = floor(n / 2)
+    answer = 1
+
+    while low &lt;= high:
+        mid = low + floor((high - low) / 2)
+
+        if mid &lt;= floor(n / mid):
+            answer = mid
+            low = mid + 1
+        else:
+            high = mid - 1
+
+    return answer</code></pre>
+<p>The variable <code>answer</code> preserves the largest midpoint whose square does not exceed <code>N</code>. That is exactly the definition of <code>floor(sqrt(N))</code>.</p>
+<h2>Worked Binary Search Example</h2>
+<p>For <code>N = 27</code>, search the interval <code>[1, 13]</code>:</p>
+<pre><code>mid = 7   -&gt; 7 &gt; 27 / 7, so move left
+mid = 3   -&gt; 3 &lt;= 27 / 3, save 3 and move right
+mid = 5   -&gt; 5 &lt;= 27 / 5, save 5 and move right
+mid = 6   -&gt; 6 &gt; 27 / 6, so move left</code></pre>
+<p>The search stops with <code>answer = 5</code>. Since <code>5^2 = 25</code> and <code>6^2 = 36</code>, the integer square root of <code>27</code> is <code>5</code>.</p>
+<p>For a perfect square such as <code>N = 49</code>, the same algorithm returns <code>7</code>.</p>
+<h2>Approach 2: Newton's Method for a Decimal Approximation</h2>
 <p>Newton's method converges quickly by repeatedly improving an estimate. For the equation <code>x^2 - N = 0</code>, the update rule is:</p>
 <pre><code>x_next = 0.5 * (x + N / x)</code></pre>
-<p>Start with a positive guess, often <code>N</code> itself for simple implementations, and repeat the update until the difference between two consecutive estimates is smaller than the required tolerance.</p>
+<p>Start with a positive guess and repeat the update until the difference between consecutive estimates is at most the required tolerance.</p>
+<pre><code>approximateSquareRoot(n, epsilon):
+    if n &lt; 0:
+        error &quot;square root is undefined for negative real numbers&quot;
+
+    if n == 0:
+        return 0
+
+    estimate = max(1, n)
+
+    while true:
+        next = 0.5 * (estimate + n / estimate)
+
+        if abs(next - estimate) &lt;= epsilon:
+            return next
+
+        estimate = next</code></pre>
+<p>For <code>N = 10</code>, the estimates begin like this:</p>
+<pre><code>10
+5.5
+3.6590909...
+3.1960050...
+3.1624556...
+3.1622776...</code></pre>
+<p>The sequence quickly approaches <code>sqrt(10)</code>. A production numerical routine may use a relative error test as well, but an explicit absolute tolerance is usually enough for an interview answer when the expected input range is known.</p>
 <h2>When to Use Each Approach</h2>
-<p>Binary search is easier to reason about and works well for integer square roots. Newton's method is faster for floating-point approximations, but it requires careful handling of precision, zero, and stopping conditions.</p>
+<p>Use binary search when the output is an integer and you want a simple correctness argument. Use Newton's method when the output is a decimal approximation and fast convergence matters.</p>
+<ul><li>Binary search: <code>O(log N)</code> time and <code>O(1)</code> extra space.</li><li>Newton's method: <code>O(log P)</code> iterations for roughly <code>P</code> bits of precision under standard assumptions, with <code>O(1)</code> extra space.</li></ul>
+<p>The complexity statement for Newton's method depends on the numeric model and precision target, so avoid claiming that it is simply <code>O(log N)</code> without explaining what is being measured.</p>
+<h2>Edge Cases</h2>
+<ul><li><code>N = 0</code>: return <code>0</code> before any division.</li><li><code>N = 1</code>: return <code>1</code> directly.</li><li><code>0 &lt; N &lt; 1</code>: a decimal implementation should not use <code>N / 2</code> as an upper bound because the square root is greater than <code>N</code>.</li><li>Negative input: reject it unless complex-number output is part of the contract.</li><li>Large integers: avoid <code>mid * mid</code> unless the language provides a wider safe type.</li><li>Approximate output: define the tolerance and ensure the iteration cannot divide by zero.</li></ul>
+<h2>Common Mistakes</h2>
+<ul><li>solving the decimal version when the interviewer asked for an integer floor</li><li>returning the last midpoint instead of the largest valid midpoint</li><li>overflowing while evaluating <code>mid * mid</code></li><li>forgetting that <code>0</code> needs special handling in Newton's formula</li><li>comparing floating-point values for exact equality</li><li>using a tolerance without stating what accuracy it guarantees</li></ul>
+<h2>Why the Binary Search Is Correct</h2>
+<p>At every step, <code>answer</code> is a valid lower bound: <code>answer^2 &lt;= N</code>. When a midpoint is valid, the algorithm records it and searches for a larger valid value. When a midpoint is too large, every value to its right is also too large because squaring is monotonic for non-negative numbers.</p>
+<p>Once <code>low &gt; high</code>, no unexamined larger valid integer remains. Therefore <code>answer</code> is the greatest integer whose square is at most <code>N</code>, which is <code>floor(sqrt(N))</code>.</p>
+<h2>Interview-Ready Summary</h2>
+<p>Start by clarifying whether the expected result is an integer floor or a decimal approximation. For <code>floor(sqrt(N))</code>, binary-search the non-negative answer range, retain the largest valid midpoint, and compare with <code>mid &lt;= N / mid</code> to avoid overflow. For an approximate result, use Newton's update and stop when consecutive estimates differ by no more than an agreed tolerance.</p>
         <aside class="source">
     <h2>Archive Evidence</h2>
     <p><strong>Evidence tier:</strong> Gold</p>
