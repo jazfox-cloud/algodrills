@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="/favicon.ico?v=3" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png?v=3">
+  <link rel="icon" type="image/png" sizes="16x16" href="/brand/favicon-16.png?v=3">
+  <link rel="apple-touch-icon" sizes="32x32" href="/brand/favicon-32.png?v=3">
+  <title>Loop Invariants for Array Interview Problems</title>
+  <meta name="description" content="Learn how to state, maintain, and use loop invariants to explain one-pass array and scan-based interview solutions with confidence.">
+  <link rel="canonical" href="https://algodrills.com/loop-invariants-array-interviews/">
+  <meta property="og:url" content="https://algodrills.com/loop-invariants-array-interviews/">
+  <meta property="og:title" content="Loop Invariants for Array Interview Problems">
+  <meta property="og:description" content="Learn how to state, maintain, and use loop invariants to explain one-pass array and scan-based interview solutions with confidence.">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://algodrills.com/images/algodrills-social.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:alt" content="AlgoDrills — Algorithm Practice, Explained Clearly">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://algodrills.com/images/algodrills-social.png">
+  <meta name="twitter:image:alt" content="AlgoDrills — Algorithm Practice, Explained Clearly">
+  <meta name="twitter:title" content="Loop Invariants for Array Interview Problems">
+  <meta name="twitter:description" content="Learn how to state, maintain, and use loop invariants to explain one-pass array and scan-based interview solutions with confidence.">
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    window.gtag = gtag;
+    gtag('consent', 'default', {
+      analytics_storage: 'denied',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      wait_for_update: 500
+    });
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --accent: #2457c5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: #fff; line-height: 1.65; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; overflow-wrap: anywhere; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 48px; }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; }
+    header span { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 0 0 18px; letter-spacing: 0; }
+    h2 { font-size: 24px; margin-top: 38px; }
+    h3 { font-size: 19px; margin-top: 28px; }
+    p { margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 34px 0; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+    .card a { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .notice p, header span { color: var(--muted); }
+    .notice, .source, .related { border-top: 1px solid var(--line); margin-top: 38px; padding-top: 22px; }
+    .article { max-width: 760px; }
+    .article h1 { font-size: clamp(30px, 6vw, 46px); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .92em; overflow-wrap: anywhere; }
+    pre { overflow: auto; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    pre code { border: 0; padding: 0; background: transparent; overflow-wrap: normal; }
+    ul { padding-left: 22px; }
+    footer { margin-top: 54px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+    footer button { appearance: none; border: 0; background: transparent; color: var(--accent); cursor: pointer; font: inherit; padding: 0; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .consent-banner { position: fixed; inset: auto 16px 16px; z-index: 20; display: none; max-width: 720px; margin: 0 auto; padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 14px 40px rgba(23, 32, 51, .18); }
+    .consent-banner.is-visible { display: block; }
+    .consent-banner p { margin: 0 0 12px; color: var(--muted); }
+    .consent-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .consent-actions button { border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text); cursor: pointer; font: inherit; font-weight: 700; min-height: 42px; padding: 8px 14px; }
+    .consent-actions button:first-child { border-color: var(--accent); background: var(--accent); color: #fff; }
+    .consent-actions button:focus-visible, footer button:focus-visible { outline: 3px solid rgba(36, 87, 197, .35); outline-offset: 2px; }
+    @media (max-width: 520px) {
+      .consent-banner { inset: auto 10px 10px; }
+      .consent-actions { display: grid; grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a href="/">Algorithm Notes</a>
+      <span>Archive-backed notes · Original guides</span>
+    </header>
+    <main>
+      <article class="article">
+        <h1>Loop Invariants for Array Interviews: How to Prove Your Scan Is Correct</h1>
+<p>Many array interview problems look simple after you see the final code. The real challenge is not writing a loop. It is proving that the loop preserves the right structure after every step.</p>
+<p>That proof usually comes from a loop invariant: a statement that is true before the loop starts, remains true after every iteration, and is strong enough to justify the final answer.</p>
+<p>If you can say the invariant clearly, you can often explain the whole algorithm clearly.</p>
+<h2>What a Loop Invariant Really Is</h2>
+<p>A loop invariant is not a slogan like &quot;the array is getting sorted.&quot; It is a precise claim about the part of the input you have already processed and the state you are carrying forward.</p>
+<p>In interview terms, a good invariant answers three questions:</p>
+<ul><li>what part of the input has already been handled</li><li>what your variables mean right now</li><li>what property is guaranteed to hold before the next iteration begins</li></ul>
+<p>For scan-based problems, this is often the difference between &quot;I think this works&quot; and &quot;here is why it works.&quot;</p>
+<h2>The Three-Part Proof You Can Reuse</h2>
+<p>When an interviewer asks why your loop is correct, use the same structure every time:</p>
+<ul><li>Initialization: explain why the invariant is true before the first iteration</li><li>Maintenance: explain why one more iteration keeps the invariant true</li><li>Termination: explain why the invariant implies the final answer when the loop ends</li></ul>
+<p>This structure is more useful than memorizing a proof for one problem. It gives you a reusable way to talk through almost any one-pass solution.</p>
+<h2>Start by Naming the Processed Region</h2>
+<p>The easiest way to find an invariant is to split the input into regions.</p>
+<p>For example, after reading the first <code>i</code> elements, you might know:</p>
+<ul><li>the left side already satisfies the target arrangement</li><li>the middle section is still unknown</li><li>one variable stores the best answer seen so far</li><li>a candidate has survived every elimination test up to this point</li></ul>
+<p>That region-based view makes the invariant concrete. Without it, developers often describe only the next action and never explain what the current state guarantees.</p>
+<h2>Example: Insert Interval</h2>
+<p>In <a href="/insert-interval/">Insert Interval</a>, the useful invariant is not just &quot;we are merging intervals.&quot;</p>
+<p>A better invariant is:</p>
+<ul><li>the output built so far contains the correct merged result for every interval that ends before the current scan position</li><li>if a merged interval is still open, it represents the correct merge of the new interval with every overlapping interval seen so far</li></ul>
+<p>That wording tells you exactly why it is safe to append a non-overlapping interval, exactly when to merge, and exactly why the final append is correct.</p>
+<p>The code becomes much easier to defend because each branch corresponds to one invariant-preserving case.</p>
+<h2>Example: Plus Minus Array</h2>
+<p>In <a href="/plus-minus-array/">Plus Minus Array</a>, a strong invariant focuses on placement rather than vague progress.</p>
+<p>For a left-to-right construction, you might say:</p>
+<ul><li>every filled index before position <code>i</code> already satisfies the alternating-sign rule</li><li>the unused positive and negative elements still preserve their original relative order within their own groups</li><li>the next write position is the first index whose value is not yet fixed</li></ul>
+<p>That invariant clarifies why each assignment is safe and why the algorithm can stop once one group is exhausted and the remaining elements are appended under the chosen contract.</p>
+<h2>Example: Sort by Length and Frequency</h2>
+<p>In <a href="/sort-by-length-then-frequency/">Sort Words by Length and Frequency</a>, the main loop may build counts before a later sort step. The invariant during counting is different from the invariant during output construction.</p>
+<p>During counting, a good invariant is:</p>
+<ul><li>after processing the first <code>i</code> words, the frequency map matches exactly those <code>i</code> words</li></ul>
+<p>That sounds obvious, but it matters because it identifies the meaning of the map precisely. Once you later sort by the comparison rule, the reasoning shifts from a scan invariant to a comparator contract.</p>
+<p>This is a useful reminder: not every problem has one invariant for the entire solution. Multi-stage solutions often need one invariant per stage.</p>
+<h2>Example: Candidate Elimination</h2>
+<p>In <a href="/celebrities/">Celebrity Problem</a>, the elimination pass is a classic invariant exercise.</p>
+<p>After processing the first <code>i</code> people, the invariant can be:</p>
+<ul><li>every person eliminated so far is provably not a celebrity</li><li>the current candidate is the only person among the processed prefix who could still be a celebrity</li></ul>
+<p>That is what makes the one-pass elimination defensible. You are not guessing. You are shrinking the candidate set while preserving exactly one viable option.</p>
+<p>The same style of reasoning shows up in <a href="/car-race/">Car Race Leaderboard</a>, where the maintained state summarizes the best result seen so far over the processed event stream.</p>
+<h2>Common Invariant Shapes for Interview Problems</h2>
+<p>Across array and scan problems, the same invariant patterns appear again and again:</p>
+<ul><li>processed prefix is already correct</li><li>best answer so far summarizes the processed prefix</li><li>candidate set has been reduced without losing any valid answer</li><li>window boundaries capture exactly the current feasible segment</li><li>counts or maps match the elements seen so far</li><li>output built so far is correct and final for its completed region</li></ul>
+<p>If you learn to spot these shapes, you stop treating every new problem as if it needs a totally new proof language.</p>
+<h2>A Simple Template for Writing One</h2>
+<p>When you get stuck, fill in this sentence:</p>
+<pre><code>Before each iteration, after processing __________,
+the variables __________ represent __________,
+and the region __________ already satisfies __________.</code></pre>
+<p>Then test whether that statement survives one more iteration. If it does not, the invariant is too vague or simply wrong.</p>
+<p>A good invariant should make incorrect code feel uncomfortable. If two very different branches both seem compatible with your statement, it is probably not specific enough.</p>
+<h2>Mistakes That Usually Mean the Invariant Is Weak</h2>
+<ul><li>describing what the loop does instead of what is already guaranteed</li><li>using words like &quot;correct&quot; or &quot;better&quot; without saying correct about what</li><li>forgetting to define what a pointer, counter, or candidate means</li><li>jumping from maintenance directly to the final answer without a termination argument</li><li>writing an invariant that is so weak it would also be true for a broken implementation</li></ul>
+<p>These mistakes are common because people focus on actions. Invariants force you to focus on state.</p>
+<h2>How to Say It in an Interview</h2>
+<p>You usually do not need a formal proof. A short explanation is enough:</p>
+<ul><li>&quot;Before each iteration, everything before index <code>i</code> already satisfies the required arrangement.&quot;</li><li>&quot;My candidate is the only remaining possible answer among the people processed so far.&quot;</li><li>&quot;The map exactly reflects the counts in the prefix we have scanned.&quot;</li></ul>
+<p>Then connect each branch of the loop to preserving that statement.</p>
+<p>This style makes your reasoning sound deliberate, even if the code itself is short.</p>
+<h2>How This Connects to the Rest of AlgoDrills</h2>
+<p>If you want to practice loop invariants deliberately, this sequence works well:</p>
+<ul><li><a href="/insert-interval/">Insert Interval</a> for region-based merging</li><li><a href="/plus-minus-array/">Plus Minus Array</a> for placement constraints during a scan</li><li><a href="/sort-by-length-then-frequency/">Sort Words by Length and Frequency</a> for stage-specific state meaning</li><li><a href="/celebrities/">Celebrity Problem</a> for elimination invariants</li><li><a href="/square-root/">How to Compute a Square Root Without Calling a Library Function</a> for a binary-search invariant over an answer space</li></ul>
+<p>That last example is important because invariants are not limited to arrays. They also explain why search boundaries, candidate answers, and monotonic conditions stay valid during binary search.</p>
+<h2>The Real Goal</h2>
+<p>Loop invariants are not academic decoration. They are the shortest path from code that seems plausible to code you can defend under pressure.</p>
+<p>When you practice a scan-based problem, do not stop after getting the right output. Ask one more question:</p>
+<ul><li>what exactly is guaranteed to be true before the next iteration starts</li></ul>
+<p>If you can answer that cleanly, you usually understand the algorithm well enough to adapt it, debug it, and explain it in an interview without sounding like you memorized it.</p>
+        <aside class="source"><h2>Editorial Note</h2><p>This is an original Algorithm Notes guide. It expands on related archive-backed problems without claiming a historical source.</p></aside>
+      </article>
+      <nav class="related">
+        <h2>More Notes</h2>
+        <ul><li><a href="/algorithm-interview-pattern-roadmap/" data-analytics-content="related_note" data-analytics-slug="algorithm-interview-pattern-roadmap" data-analytics-placement="related_notes">Algorithm Interview Pattern Roadmap: What to Practice First</a></li><li><a href="/backtracking-vs-iterative-generation/" data-analytics-content="related_note" data-analytics-slug="backtracking-vs-iterative-generation" data-analytics-placement="related_notes">Backtracking vs Iterative Generation for Combinatorial Problems</a></li><li><a href="/bitwise-arithmetic/" data-analytics-content="related_note" data-analytics-slug="bitwise-arithmetic" data-analytics-placement="related_notes">Bitwise Arithmetic: Replacing Multiplication, Powers, and Modulo</a></li><li><a href="/car-race/" data-analytics-content="related_note" data-analytics-slug="car-race" data-analytics-placement="related_notes">Car Race Leaderboard: Tracking the Fastest Car on a Linear Track</a></li><li><a href="/celebrities/" data-analytics-content="related_note" data-analytics-slug="celebrities" data-analytics-placement="related_notes">Celebrity Problem: Elimination Strategy for a Directed Knows Graph</a></li><li><a href="/center-points/" data-analytics-content="related_note" data-analytics-slug="center-points" data-analytics-placement="related_notes">Center Points: Midpoints and Geometric Centers in Interview Problems</a></li><li><a href="/square-root/" data-analytics-content="related_note" data-analytics-slug="square-root" data-analytics-placement="related_notes">How to Compute a Square Root Without Calling a Library Function</a></li><li><a href="/insert-interval/" data-analytics-content="related_note" data-analytics-slug="insert-interval" data-analytics-placement="related_notes">Insert Interval: Merging a New Range Into Sorted Intervals</a></li><li><a href="/log-every-second/" data-analytics-content="related_note" data-analytics-slug="log-every-second" data-analytics-placement="related_notes">Log Every Second: Scheduling Repeated Output Without Blocking</a></li><li><a href="/keypad/" data-analytics-content="related_note" data-analytics-slug="keypad" data-analytics-placement="related_notes">Phone Keypad Letter Combinations: A Backtracking Interview Problem</a></li><li><a href="/plus-minus-array/" data-analytics-content="related_note" data-analytics-slug="plus-minus-array" data-analytics-placement="related_notes">Plus Minus Array: Reordering Positive and Negative Values</a></li><li><a href="/power-set/" data-analytics-content="related_note" data-analytics-slug="power-set" data-analytics-placement="related_notes">Power Set Generation: Two Practical Interview Approaches</a></li><li><a href="/rectangles-store/" data-analytics-content="related_note" data-analytics-slug="rectangles-store" data-analytics-placement="related_notes">Rectangles Store: Fast Point Queries Over Overlapping Rectangles</a></li><li><a href="/sort-by-length-then-frequency/" data-analytics-content="related_note" data-analytics-slug="sort-by-length-then-frequency" data-analytics-placement="related_notes">Sort Words by Length and Frequency</a></li><li><a href="/weighted-random/" data-analytics-content="related_note" data-analytics-slug="weighted-random" data-analytics-placement="related_notes">Weighted Random Selection: Picking Values by Distribution</a></li></ul>
+      </nav></main>
+    <footer>Independent algorithm education with clearly labeled archive recovery and original guides. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://github.com/jazfox-cloud/algodrills">GitHub</a> · <button type="button" data-open-analytics-choices>Cookie Settings</button></footer>
+  </div>
+  <div class="consent-banner" data-analytics-banner role="dialog" aria-live="polite" aria-label="Analytics choices">
+    <p>Help improve Algorithm Notes with privacy-conscious analytics. We measure aggregate page visits and content navigation after consent, without sending answers, code, numbers, or free-form text.</p>
+    <div class="consent-actions">
+      <button type="button" data-accept-analytics>Accept analytics</button>
+      <button type="button" data-reject-analytics>Reject analytics</button>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var measurementId = "G-2YQHQBV332";
+      var canonicalHost = "algodrills.com";
+      var choiceKey = "algodrills_analytics_consent";
+      var scriptLoaded = false;
+      var pageConfigured = false;
+      var selectedContent = {};
+      var banner = document.querySelector("[data-analytics-banner]");
+
+      function isProductionHost() {
+        return window.location.hostname === canonicalHost;
+      }
+
+      function ensureGtag() {
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function gtag() { window.dataLayer.push(arguments); };
+      }
+
+      function updateConsent(analyticsStorage) {
+        ensureGtag();
+        window.gtag("consent", "update", {
+          analytics_storage: analyticsStorage,
+          ad_storage: "denied",
+          ad_user_data: "denied",
+          ad_personalization: "denied"
+        });
+      }
+
+      function loadAnalytics() {
+        if (!isProductionHost()) return;
+        ensureGtag();
+        updateConsent("granted");
+        window.gtag("js", new Date());
+        if (!pageConfigured) {
+          window.gtag("config", measurementId, {
+            anonymize_ip: true,
+            allow_google_signals: false,
+            allow_ad_personalization_signals: false
+          });
+          pageConfigured = true;
+        }
+        if (!scriptLoaded && !document.querySelector('script[src*="googletagmanager.com/gtag/js?id=' + measurementId + '"]')) {
+          var script = document.createElement("script");
+          script.async = true;
+          script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(measurementId);
+          document.head.appendChild(script);
+          scriptLoaded = true;
+        }
+      }
+
+      function hideBanner() {
+        if (banner) banner.classList.remove("is-visible");
+      }
+
+      function showBanner() {
+        if (banner) banner.classList.add("is-visible");
+      }
+
+      function setChoice(choice) {
+        try {
+          window.localStorage.setItem(choiceKey, choice);
+        } catch {}
+        if (choice === "granted") loadAnalytics();
+        else updateConsent("denied");
+        hideBanner();
+      }
+
+      function getChoice() {
+        try {
+          return window.localStorage.getItem(choiceKey);
+        } catch {
+          return null;
+        }
+      }
+
+      document.querySelectorAll("[data-open-analytics-choices]").forEach(function (button) {
+        button.addEventListener("click", showBanner);
+      });
+      document.querySelectorAll("[data-accept-analytics]").forEach(function (button) {
+        button.addEventListener("click", function () { setChoice("granted"); });
+      });
+      document.querySelectorAll("[data-reject-analytics]").forEach(function (button) {
+        button.addEventListener("click", function () { setChoice("denied"); });
+      });
+
+      document.addEventListener("click", function (event) {
+        var link = event.target.closest && event.target.closest("[data-analytics-content]");
+        if (!link || getChoice() !== "granted" || !isProductionHost()) return;
+        var contentType = link.getAttribute("data-analytics-content") || "";
+        var contentSlug = link.getAttribute("data-analytics-slug") || "";
+        var placement = link.getAttribute("data-analytics-placement") || "";
+        var key = contentType + ":" + contentSlug + ":" + placement;
+        if (selectedContent[key]) return;
+        selectedContent[key] = true;
+        ensureGtag();
+        window.gtag("event", "select_content", {
+          content_type: contentType,
+          content_slug: contentSlug,
+          placement: placement,
+          transport_type: "beacon"
+        });
+      });
+
+      var initialChoice = getChoice();
+      if (initialChoice === "granted") loadAnalytics();
+      else if (initialChoice === "denied") updateConsent("denied");
+      else showBanner();
+    })();
+  </script>
+</body>
+</html>
