@@ -94,21 +94,79 @@
     <main>
       <article class="article">
         <h1>Power Set Generation: Two Practical Interview Approaches</h1>
-<p>A power set is the set of all subsets of a given set. It includes the empty set and the original set itself. If the input has <code>N</code> elements, the power set contains <code>2^N</code> subsets.</p>
-<p>Generating every subset without duplicates or omissions is a common interview problem because it tests your ability to model choices cleanly.</p>
+<p>A power set contains every subset of a set, including the empty set and the original set. For <code>N</code> distinct elements, it contains exactly <code>2^N</code> subsets: each element can be included or excluded.</p>
+<h2>Input and Output Contract</h2>
+<p>The Python functions below accept a list of distinct integers and return a list of subsets, each represented by a new list. They preserve the input order within each subset and do not modify the input. The order of the subsets may differ between implementations.</p>
+<ul><li>Empty input returns <code>[[]]</code>: the empty set has one subset.</li><li>Negative values and zero work like any other values.</li><li>Distinct elements are a precondition, not a runtime check. With <code>[1, 1]</code>, these functions treat the two positions separately and produce repeated value-based subsets. If the question asks for unique subsets of an array with duplicates, use a separate duplicate-aware algorithm, such as sorting and skipping equal choices at the same recursion depth.</li></ul>
 <h2>Approach 1: Bit Masking</h2>
-<p>Each element has exactly two states in a subset: included or excluded. That maps naturally to binary digits.</p>
-<p>For an input array of length <code>N</code>, every integer from <code>0</code> to <code>2^N - 1</code> can represent one subset. If the <code>j</code>-th bit of the number is <code>1</code>, include the <code>j</code>-th input element. If it is <code>0</code>, leave that element out.</p>
-<h2>Bit Masking Steps</h2>
-<ul><li>Let <code>total = 1 &lt;&lt; N</code>.</li><li>Iterate <code>mask</code> from <code>0</code> to <code>total - 1</code>.</li><li>For each bit position <code>j</code>, check whether <code>mask &amp; (1 &lt;&lt; j)</code> is non-zero.</li><li>If the bit is set, add <code>nums[j]</code> to the current subset.</li><li>Append the completed subset to the result list.</li></ul>
-<p>This approach is compact and avoids recursion. It is especially convenient when the input size is small enough that <code>2^N</code> subsets can fit in memory.</p>
+<p>Use one bit for each input position. In a mask, bit <code>j</code> is <code>1</code> exactly when <code>nums[j]</code> belongs to the subset. Enumerating all integers from <code>0</code> through <code>(1 &lt;&lt; N) - 1</code> visits every possible inclusion pattern.</p>
+<pre><code>def power_set_masks(nums):
+    result = []
+    for mask in range(1 &lt;&lt; len(nums)):
+        subset = []
+        for j, value in enumerate(nums):
+            if mask &amp; (1 &lt;&lt; j):
+                subset.append(value)
+        result.append(subset)
+    return result</code></pre>
+<h3>Complete Example: <code>[1, 2, 3]</code></h3>
+<p>The rightmost bit represents the first input element, <code>1</code>. Read each mask using that convention:</p>
+<ul><li><code>000</code> selects <code>[]</code>.</li><li><code>001</code> selects <code>[1]</code>.</li><li><code>010</code> selects <code>[2]</code>.</li><li><code>011</code> selects <code>[1, 2]</code>.</li><li><code>100</code> selects <code>[3]</code>.</li><li><code>101</code> selects <code>[1, 3]</code>.</li><li><code>110</code> selects <code>[2, 3]</code>.</li><li><code>111</code> selects <code>[1, 2, 3]</code>.</li></ul>
+<p>For example, mask <code>101</code> includes positions zero and two. The function returns the eight lists above in that order.</p>
+<h3>Why It Works</h3>
+<p>Every subset has a unique inclusion bit for each input position, so it corresponds to exactly one mask. The loop visits every mask once. With distinct input elements, this guarantees that no subset is missing or repeated.</p>
 <h2>Approach 2: Backtracking</h2>
-<p>Backtracking models subset generation as a decision tree. At each element, make one of two choices:</p>
-<ul><li>Include the current element.</li><li>Exclude the current element.</li></ul>
-<p>When the recursion index reaches the end of the array, copy the current path into the result list.</p>
+<p>At each index, choose to exclude or include that element. The current <code>path</code> holds the choices made so far. At the end of the input, save a copy of it.</p>
+<pre><code>def power_set_backtracking(nums):
+    result = []
+    path = []
+
+    def visit(index):
+        if index == len(nums):
+            result.append(path.copy())
+            return
+
+        visit(index + 1)  # Exclude this element.
+        path.append(nums[index])
+        visit(index + 1)  # Include this element.
+        path.pop()       # Restore the path for the caller.
+
+    visit(0)
+    return result</code></pre>
+<p>For <code>[1, 2]</code>, the decisions are exclude/exclude, exclude/include, include/exclude, and include/include. The output is <code>[[], [2], [1], [1, 2]]</code>. Bit masking returns <code>[[], [1], [2], [1, 2]]</code>; both contain the same subsets.</p>
+<h3>Why Copy and Pop Matter</h3>
+<p>On entry to <code>visit(index)</code>, <code>path</code> contains exactly the selected elements among positions before <code>index</code>. The two recursive calls cover both choices for the next element. At a leaf, every position has been decided, so the path represents one complete subset.</p>
+<p><code>path.copy()</code> gives each output subset its own list. Appending <code>path</code> directly would store repeated references to the same mutable list. <code>path.pop()</code> restores the caller's path after exploring the include branch. Together, these operations preserve the invariant as the traversal visits all <code>2^N</code> leaves.</p>
+<h2>Runnable Checks</h2>
+<p>Run these checks after both function definitions. Compare sets of tuples when output order is irrelevant, and check the length separately to catch duplicate outputs.</p>
+<pre><code>expected = {
+    (), (1,), (2,), (3,),
+    (1, 2), (1, 3), (2, 3), (1, 2, 3),
+}
+
+for generate in (power_set_masks, power_set_backtracking):
+    assert generate([]) == [[]]
+    assert generate([7]) == [[], [7]]
+    assert {tuple(s) for s in generate([-1, 0])} == {
+        (), (-1,), (0,), (-1, 0),
+    }
+
+    nums = [1, 2, 3]
+    subsets = generate(nums)
+    assert len(subsets) == 8
+    assert {tuple(s) for s in subsets} == expected
+    assert nums == [1, 2, 3]
+
+    # Modifying one output list must not change another or the input.
+    subsets[0].append(99)
+    assert all(99 not in s for s in subsets[1:])
+    assert nums == [1, 2, 3]</code></pre>
+<h2>Time and Space Complexity</h2>
+<p>For <code>N &gt;= 1</code>, both implementations take <code>O(N * 2^N)</code> time when they materialize every subset. Bit masking checks <code>N</code> positions for every mask. Backtracking visits <code>O(2^N)</code> tree nodes, but copying all paths costs <code>N * 2^(N - 1)</code> element copies: each element appears in half of the subsets.</p>
+<p>The returned result uses <code>O(N * 2^N)</code> space, including the subset contents. Excluding that result, bit masking uses at most <code>O(N)</code> working space for its current subset, and backtracking uses <code>O(N)</code> for its path and recursion stack. Empty input takes constant time and space.</p>
+<p>These are the usual interview bounds with constant-cost index and bit operations. Python integers have arbitrary precision, so operations on very large masks are not literally constant time. In practice, storing exponentially many subsets becomes the main limitation long before a large input is feasible; recursive code also has a recursion-depth limit.</p>
 <h2>Choosing Between Them</h2>
-<p>Bit masking is concise and iterative. Backtracking is often easier to extend when the problem adds constraints, duplicate handling, pruning, or ordering requirements.</p>
-<p>Both approaches have the same output size, so both require <code>O(2^N * N)</code> time in the general case.</p>
+<p>Use bit masking for a compact iterative solution when every subset is required. Use backtracking when the interview introduces constraints or pruning. Neither approach makes a large power set cheap to produce. Before generating results, clarify whether the interviewer needs all subsets, just their count, or subsets meeting a condition.</p>
 <h2>Related Guide</h2>
 <p>See <a href="/backtracking-vs-iterative-generation/">Backtracking vs Iterative Generation</a> for guidance on choosing between recursive search, iterative expansion, and bit masks across combinatorial problems.</p>
         <aside class="source">
