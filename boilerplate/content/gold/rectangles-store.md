@@ -12,7 +12,7 @@ rewrite_status: "rewritten"
 
 # Rectangles Store: Fast Point Queries Over Overlapping Rectangles
 
-This problem asks you to design a rectangle lookup structure that is efficient both in memory and query time. That combination is what makes it a good interview question: you cannot get away with either a brute-force scan or a giant point-by-point grid.
+This problem asks you to design a rectangle lookup structure that is efficient both in memory and query time. A brute-force scan is a useful correctness baseline; a boundary index can reduce the candidates without allocating a giant point-by-point grid. It does not automatically guarantee sublinear queries.
 
 In practice, this is the kind of prompt where interviewers care less about naming a specific data structure and more about whether you can turn a two-dimensional geometry question into a small number of ordered one-dimensional checks. That is the main idea to make explicit.
 
@@ -41,14 +41,24 @@ Before choosing a data structure, pin down the contract:
 
 Those details change the best implementation. If updates are rare and queries are frequent, preprocessing is worth more. If updates happen constantly, a heavier dynamic index may be justified.
 
-## Why the Obvious Solutions Fail
+## Contract for the Python Example
 
-Two simple ideas are ruled out:
+The implementation below makes explicit choices for this tutorial; these are not additional claims about the archived prompt:
 
-- Storing the rectangles in a plain list makes each query too slow because you may need to scan every rectangle.
-- Mapping every point in the bounding box to a rectangle uses far too much memory when coordinates are large.
+- Rectangles are static after construction. Rebuild the store to change them.
+- Each rectangle is `(id, left, right, top, bottom)` with a unique string id and integer coordinates. The caller supplies valid rectangles: `left <= right`, `top <= bottom`, all contained in the bounding box.
+- Bounds are `(left, right, top, bottom)`, with the same coordinate convention. Larger y values point downward.
+- Edges are inclusive. Zero-width and zero-height rectangles are allowed.
+- Input order is the layer order, from back to front. The last containing rectangle wins, regardless of its area or top coordinate.
+- Empty stores, uncovered points, and points outside the bounding box return `None`.
 
-So the real task is to index rectangle boundaries in a way that narrows the candidate set quickly.
+These are input preconditions, not a validation API. A production interface can validate them once at construction.
+
+## Baseline and Memory Tradeoff
+
+A reverse scan of the input finds the topmost containing rectangle in `O(N)` time with no index. Keep that version as a reference for testing. Mapping every point in the bounding box to a rectangle, however, uses memory proportional to coordinate area, which is unsuitable for huge coordinates.
+
+Boundary indexes use memory proportional to the number of rectangles. They help when at least one boundary filter is selective; heavy overlap can still force a linear query.
 
 ## Baseline Answer
 
@@ -60,7 +70,7 @@ The baseline interview answer is usually:
 4. intersect the survivors
 5. apply the tie-break rule for the topmost rectangle
 
-That answer is already much stronger than suggesting a full grid or a linear scan over every rectangle on every query.
+The key follow-up is how many candidates survive each filter. Binary search finds a cutoff quickly, but processing the candidates still costs time.
 
 ## Core Idea
 
@@ -95,7 +105,75 @@ For a query point `(x, y)`, compute four candidate sets:
 
 Any rectangle containing `(x, y)` must appear in all four sets.
 
-So the answer is the first rectangle id that appears in every set, using the ordering rule that matches "topmost" in the problem definition.
+Take the highest-layer id in the intersection. Iteration order in a set is not a substitute for the layer rule.
+
+We can avoid materializing four sets: find all four cutoff ranges, scan the smallest range, and check all four inequalities directly for each candidate. Every containing rectangle must occur in that range, so this produces the same answer.
+
+## Runnable Python Implementation
+
+The store copies the input into tuples and maintains four arrays of rectangle indexes, one per sorted boundary. Separate edge-value arrays make the binary searches explicit. The stored arrays are internal state and should not be mutated by callers.
+
+```python
+from bisect import bisect_left, bisect_right
+
+
+class RectangleStore:
+    def __init__(self, bounds, rectangles):
+        self.bounds = tuple(bounds)
+        self.rectangles = tuple(tuple(r) for r in rectangles)
+        n = len(self.rectangles)
+        self.orders = []
+        self.edges = []
+        for field in (1, 2, 3, 4):  # left, right, top, bottom
+            order = sorted(range(n), key=lambda i: self.rectangles[i][field])
+            self.orders.append(order)
+            self.edges.append([self.rectangles[i][field] for i in order])
+
+    def find_rectangle_at(self, x, y):
+        left, right, top, bottom = self.bounds
+        if not (left <= x <= right and top <= y <= bottom):
+            return None
+
+        n = len(self.rectangles)
+        ranges = (
+            (0, bisect_right(self.edges[0], x)),  # left <= x
+            (bisect_left(self.edges[1], x), n),  # right >= x
+            (0, bisect_right(self.edges[2], y)),  # top <= y
+            (bisect_left(self.edges[3], y), n),  # bottom >= y
+        )
+        axis = min(range(4), key=lambda j: ranges[j][1] - ranges[j][0])
+        start, stop = ranges[axis]
+        best = -1
+        for position in range(start, stop):
+            i = self.orders[axis][position]
+            _, left, right, top, bottom = self.rectangles[i]
+            if left <= x <= right and top <= y <= bottom:
+                best = max(best, i)
+        return None if best == -1 else self.rectangles[best][0]
+
+
+store = RectangleStore((0, 10, 0, 10), [
+    ("R1", 0, 8, 0, 8),
+    ("R2", 2, 5, 2, 6),
+    ("R3", 4, 7, 1, 4),
+])
+assert store.find_rectangle_at(4, 3) == "R3"
+assert store.find_rectangle_at(2, 6) == "R2"  # inclusive corner
+assert store.find_rectangle_at(8, 8) == "R1"
+assert store.find_rectangle_at(9, 9) is None
+assert store.find_rectangle_at(-1, 3) is None
+assert RectangleStore((0, 10, 0, 10), []).find_rectangle_at(0, 0) is None
+
+point_store = RectangleStore((0, 10, 0, 10), [
+    ("back", 0, 10, 0, 10),
+    ("front", 0, 10, 0, 10),
+    ("point", 5, 5, 5, 5),
+])
+assert point_store.find_rectangle_at(5, 5) == "point"
+assert point_store.find_rectangle_at(5, 6) == "front"
+```
+
+Use `bisect_right` for the `<=` prefixes and `bisect_left` for the `>=` suffixes. That distinction includes every rectangle tied at a boundary. The loop uses index positions rather than a slice, so queries do not copy the candidate range.
 
 ## Worked Example
 
@@ -112,25 +190,17 @@ For query point `(4, 3)`:
 - top-edge filter keeps `R1`, `R2`, `R3`
 - bottom-edge filter keeps `R1`, `R2`, `R3`
 
-All three rectangles contain the point, so geometry alone is not enough. You still need a tie-break rule. For example:
+All four candidate ranges have size three. The implementation chooses the first tied range, the left-edge index, and checks `R1`, `R2`, then `R3`. Their input indexes are `0`, `1`, and `2`; all contain the point, so `best` ends at `2` and the answer is `R3`.
 
-- highest visual layer
-- smallest area
-- most recently inserted rectangle
-- smallest top coordinate, if "topmost" is geometric
+For `(2, 6)`, the left-edge prefix contains only `R1` and `R2`. Both contain the point, including the corner of `R2`, and index `1` wins. For `(9, 9)`, the right-edge suffix is empty, so the answer is `None` without scanning any rectangle.
 
-That is why the definition of "topmost" must be clarified early.
+If an interviewer instead defines topmost by smallest top coordinate or an explicit z-index, change the winner comparison. Do not silently reuse input order.
 
 ## Why This Works
 
-Instead of asking every rectangle whether it contains the point, we first rule out most rectangles using sorted boundary indexes.
+Every rectangle containing `(x, y)` satisfies all four inequalities, so it belongs to every candidate range, including the smallest one. Scanning that range cannot miss a valid answer. Checking all four inequalities removes candidates that satisfy only the chosen boundary condition.
 
-That gives us:
-
-- good memory behavior because we store only rectangle boundaries
-- faster point queries because each filter removes impossible candidates early
-
-The exact implementation can use balanced trees, sorted arrays with binary search, or interval-oriented structures. What matters in an interview is the reduction from geometric containment to four one-dimensional filters.
+During the scan, `best` is the largest input index among containing rectangles examined so far, or `-1` if none have matched. Updating it with `max(best, i)` preserves that invariant. At the end, it identifies the topmost containing rectangle under the stated layer contract.
 
 ## When Sorted Arrays Are Good Enough
 
@@ -155,14 +225,17 @@ That kind of answer shows judgment: you are not pretending one structure is alwa
 
 ## Complexity Discussion
 
-If there are `N` rectangles:
+For this implementation, let `N` be the number of rectangles and `K` the size of the smallest of the four candidate ranges:
 
-- initialization is roughly `O(N log N)` if you insert all four edges into sorted structures
-- query time depends on how the candidate intersections are implemented
+- Construction takes `O(N log N)` time for four sorts and `O(N)` storage for the copied rectangles, indexes, and edge values.
+- An in-bounds query takes `O(log N + K)` time: four binary searches followed by `K` constant-size containment checks. Empty stores take `O(1)` time.
+- Query auxiliary space is `O(1)`. No candidate lists or intersections are allocated, and the result is one id or `None`.
+- An outside-bounds query takes `O(1)` time.
+- Worst-case query time is `O(N)`, because `K` can equal `N`. For example, all rectangles may contain the queried point. Small final result size does not imply a small candidate range.
 
-The archived solution uses sorted sets plus list intersection checks. That is conceptually sound, though there is still room to improve the query path with more specialized indexing if the interviewer wants stronger asymptotics.
+These bounds use the usual unit-cost model for coordinate comparisons. Python integers support large coordinates, though arithmetic and comparison costs grow with their bit length.
 
-Another useful refinement is to store candidate ids in compact integer sets so intersections are cheaper. The main performance question is not only "how fast is search?" but also "how large are the intermediate candidate lists?"
+The four-set intersection version can also require linear temporary space. A stricter query guarantee needs a specified spatial data structure and its own analysis; naming an interval tree or R-tree alone does not prove logarithmic topmost queries.
 
 ## Edge Cases
 
@@ -173,7 +246,7 @@ Another useful refinement is to store candidate ids in compact integer sets so i
 - Degenerate rectangles may have zero width or zero height.
 - Coordinate comparisons may become tricky if floating-point inputs are allowed.
 
-Clarifying that last point is important. If "topmost" means smallest top coordinate, highest z-index, or most recently inserted rectangle, the data structure may need different tie-breaking.
+The executable assertions cover empty input, overlap, identical rectangles, an inclusive corner, a zero-area rectangle, an uncovered point, and an outside point. For broader testing, compare the indexed result with a reverse linear scan over many generated valid rectangle collections and query points. Float and tolerance policies are outside this example's integer contract.
 
 ## Common Mistakes
 
@@ -187,7 +260,7 @@ Clarifying that last point is important. If "topmost" means smallest top coordin
 
 If you need a concise verbal answer, this is a good version:
 
-> I would avoid a point-by-point grid because the bounding box can be huge, and I would avoid scanning every rectangle per query because that makes queries linear. Instead, I would preprocess rectangle boundaries into sorted indexes, use the query point to filter rectangles on left, right, top, and bottom constraints, intersect those candidate sets, and then apply a deterministic topmost rule. If rectangles are static, sorted arrays plus binary search are probably the simplest strong answer. If updates are frequent, I would switch to a more dynamic interval-oriented structure.
+> I would first define containment and layer order, then use a reverse scan as a correctness baseline. For static rectangles, four sorted boundary indexes let me find the smallest candidate range with binary search. I scan that range, check full containment, and return the highest layer. This costs O(log N + K) per query with constant query space, but remains O(N) in the worst case. If that bound is insufficient, we need a stronger spatial index chosen for the required operations.
 
 That explanation is usually enough to show both the core insight and the tradeoff thinking.
 
