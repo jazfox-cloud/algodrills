@@ -94,43 +94,64 @@
     <main>
       <article class="article">
         <h1>Log Every Second: Scheduling Repeated Output Without Blocking</h1>
-<p>Questions about logging output every second are really questions about scheduling. The interviewer is not only checking whether you can print values in order, but whether you understand the difference between blocking a thread and handing work to a timer.</p>
-<h2>Problem</h2>
-<p>Given a sequence of values, print one item every second until the sequence is exhausted.</p>
-<p>Common interview variants include:</p>
-<ul><li>print numbers from <code>1</code> to <code>N</code></li><li>print the contents of an array one element per second</li><li>stop cleanly after the last value</li><li>explain how the solution changes in a single-threaded event loop</li></ul>
-<p>The useful skill here is separating the repeated action from the scheduling mechanism.</p>
-<h2>Straightforward Timer-Based Approach</h2>
-<p>If the language provides timers, the clearest solution is usually:</p>
-<p>1. keep an index for the next item to print 2. schedule a repeating callback once per second 3. print the current item inside the callback 4. advance the index 5. cancel the timer after the final item</p>
-<p>In pseudocode:</p>
-<pre><code>index = 0
-start repeating timer every 1 second:
-  print(values[index])
-  index += 1
-  if index == values.length:
-    stop timer</code></pre>
-<p>This approach is easy to explain and avoids busy waiting.</p>
-<h2>Why Busy Waiting Is Wrong</h2>
-<p>A weak solution uses a loop that repeatedly checks the clock until one second has passed. That wastes CPU time and blocks other work.</p>
-<p>Interviewers usually want you to say that:</p>
-<ul><li>busy waiting is inefficient</li><li>it prevents concurrent work on the same thread</li><li>timer APIs or sleep primitives are a better fit</li></ul>
-<p>If the environment is event-driven, blocking the main thread is especially harmful because it delays every other callback.</p>
-<h2>Recursive Timeout Variant</h2>
-<p>Some candidates prefer a self-scheduling function instead of a fixed interval timer.</p>
-<p>That pattern looks like this:</p>
-<p>1. print the current item 2. schedule the next call one second later 3. stop when there are no items left</p>
-<p>This variant is nice because the delay to the next run starts only after the current callback finishes, which avoids overlap if the callback work is not constant.</p>
-<h2>Edge Cases</h2>
-<ul><li>Empty input: print nothing and exit immediately</li><li>One element: print once and stop</li><li>Large <code>N</code>: avoid recursion that grows the call stack synchronously</li><li>Slow callback work: prefer self-scheduling timeouts if overlap would be a problem</li></ul>
+<p>Given an array, emit its values in order with a one-second delay between completed outputs. The interview challenge is managing the next index and the timer without blocking the event loop.</p>
+<h2>Define the Timing Contract First</h2>
+<p>Accept a fixed array and a synchronous, non-throwing output function. Do not mutate the array while it runs. The default output function is <code>console.log</code>.</p>
+<ul><li>Schedule the first value after 1,000 milliseconds, not immediately.</li><li>Schedule each later value 1,000 milliseconds after the previous output function returns.</li><li>Empty input produces no output and creates no timer.</li><li>Completion leaves no pending timer after the last output.</li><li>The returned cancellation function stops future outputs and is safe to call repeatedly. It cannot interrupt an output already executing.</li></ul>
+<p>These are requested delays, not exact real-time guarantees. Other event-loop work can delay a callback. This is a fixed-delay solution; it does not catch up to a wall-clock schedule.</p>
+<h2>Runnable JavaScript</h2>
+<p>Run this function in Node.js or a browser console:</p>
+<pre><code>function logEverySecond(values, emit = console.log) {
+  let index = 0;
+  let timer = null;
+  let cancelled = false;
+
+  function tick() {
+    timer = null;
+    if (cancelled) return;
+    emit(values[index]);
+    index += 1;
+    if (!cancelled &amp;&amp; index &lt; values.length) {
+      timer = setTimeout(tick, 1000);
+    }
+  }
+
+  if (values.length &gt; 0) {
+    timer = setTimeout(tick, 1000);
+  }
+
+  return function cancel() {
+    cancelled = true;
+    clearTimeout(timer);
+    timer = null;
+  };
+}</code></pre>
+<p>Call it with a sequence:</p>
+<pre><code>const cancel = logEverySecond([10, 20, 30]);
+// Expected output: 10, then 20, then 30.
+// Call cancel() to stop future outputs.</code></pre>
+<p>The function returns the cancellation handle immediately. It does not wait for completion or return a completion Promise. Empty input returns a harmless cancellation function.</p>
+<h2>Trace the Sequence</h2>
+<p>For <code>[10, 20, 30]</code>, assuming negligible output work and no scheduling delays:</p>
+<p>1. At time zero, the index is zero and one timeout is pending. Nothing is printed yet. 2. Around one second, emit <code>10</code>, advance the index, and schedule the next timeout. 3. Around two seconds, emit <code>20</code>, advance the index, and schedule the next timeout. 4. Around three seconds, emit <code>30</code>. The index equals the array length, so no new timer is created.</p>
+<p>Cancellation after the first output but before the second callback prevents the remaining outputs. If <code>emit</code> calls the cancellation handle itself, the check after <code>emit</code> prevents another timer from being scheduled.</p>
+<h2>Why It Works</h2>
+<p>Before each active callback, the index identifies the next unprinted value, and exactly the preceding values have been emitted in order. Each callback emits one value and advances once. Another callback is scheduled only while a value remains and cancellation has not occurred. Thus every value is emitted once in order unless cancelled.</p>
+<p>The empty-input guard is essential: blindly reading the first element would emit <code>undefined</code> for an empty array. The guard also avoids creating a timer that has nothing to do.</p>
+<p>Only one timeout is pending at a time. Each callback returns before the next one runs, so scheduling the same function again does not grow the synchronous call stack.</p>
+<h2>Fixed Delay Versus Fixed Interval</h2>
+<p>A repeating <code>setInterval</code> is another answer when periodic scheduling is the intended contract. It needs an empty-input guard and explicit <code>clearInterval</code> after the last value. It does not express this solution's full one-second wait after the output callback finishes.</p>
+<p>Synchronous callbacks on one JavaScript thread do not execute simultaneously. However, an interval callback that starts asynchronous work can start another operation before the earlier operation finishes. This implementation requires a synchronous <code>emit</code> and does not await a returned Promise. For asynchronous output, await the operation before scheduling the next timeout and define failure and cancellation behavior.</p>
+<p>Busy waiting consumes CPU and blocks the event loop. A slow synchronous output function also blocks while it executes; using a timer does not make that work non-blocking.</p>
+<h2>Test Without Waiting in Real Time</h2>
+<p>Use a fake clock that replaces <code>setTimeout</code> and <code>clearTimeout</code> while running the function. Check both outputs and pending timers:</p>
+<ul><li>Empty array: no output and zero timers immediately.</li><li><code>[7]</code>: no output at 999 milliseconds; one <code>7</code> at 1,000; zero timers afterward.</li><li><code>[10, 20, 30]</code>: advance in 1,000-millisecond steps and check each ordered prefix. Advance again after completion and check that nothing changes.</li><li>Cancel before the first tick: advancing time produces no output.</li><li>Cancel after one tick, including from inside <code>emit</code>: only the first value is emitted and no timer remains.</li><li>Cancel twice or after completion: no new output or timer is created.</li><li>Simulate 250 milliseconds of synchronous output work: the next callback is scheduled 1,000 milliseconds after that work ends, not after the preceding callback started.</li></ul>
+<p>Fake clocks verify scheduling logic, not real-world timing precision. A separate runtime smoke test can confirm execution with actual timers.</p>
 <h2>Complexity</h2>
-<p>The algorithm prints each item once, so the total work is <code>O(N)</code>.</p>
-<p>Extra space is <code>O(1)</code> beyond the input storage.</p>
-<p>Wall-clock time is about <code>N</code> seconds because the problem requires spacing each output by one second.</p>
-<h2>Interview Follow-Ups</h2>
-<p>The common follow-up questions are:</p>
-<ul><li>How would you cancel the process early?</li><li>What happens if the callback takes longer than one second?</li><li>How would you implement the same idea with threads and <code>sleep</code>?</li><li>How do closures affect the captured loop variable?</li></ul>
-<p>A strong answer focuses on correctness first, then explains the runtime model clearly.</p>
+<p>For <code>N</code> values and constant-time output, total work is <code>O(N)</code>. Auxiliary space is <code>O(1)</code> beyond the input: an index, cancellation state, and at most one timer. The closure retains the input while the operation or its cancellation function remains reachable.</p>
+<p>With negligible callback work and no extra delays, completion takes about <code>N</code> seconds under this delayed-first-output contract. Output duration and scheduling delays add to that time. If the interviewer wants an immediate first output, change the timing contract and expected trace together.</p>
+<h2>References</h2>
+<p>The archived source metadata identifies the recovered interview topic; the implementation and tests above are an independent explanation. See the [Node.js timer documentation](https://nodejs.org/api/timers.html) for scheduling and cancellation behavior.</p>
         <aside class="source">
     <h2>Archive Evidence</h2>
     <p><strong>Evidence tier:</strong> Gold</p>
