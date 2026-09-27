@@ -94,54 +94,106 @@
     <main>
       <article class="article">
         <h1>Car Race Leaderboard: Tracking the Fastest Car on a Linear Track</h1>
-<p>This interview problem combines event processing with ordered ranking. The archived page described a race on a straight track where cars receive speed updates over time, and the system needs to identify the current winner as the race evolves.</p>
-<h2>Problem</h2>
-<p>You manage a set of cars moving on a one-dimensional track.</p>
-<p>The interface exposes an operation like:</p>
-<pre><code>update(car_id, speed)</code></pre>
-<p>Each update changes the current speed of one car. After processing updates, the system should be able to determine which car is winning and notify a callback when the leader changes.</p>
-<p>That sounds simple until you think about scale:</p>
-<ul><li>updates may arrive frequently</li><li>many cars may be active at once</li><li>the leader can change often</li></ul>
-<p>The real interview question is how to maintain the ranking efficiently without rescanning every car after each event.</p>
-<h2>What State Do You Need?</h2>
-<p>At minimum, track two things:</p>
-<ul><li>the latest speed for each <code>car_id</code></li><li>a structure that can tell you which car currently has the best race position</li></ul>
-<p>If the problem treats higher speed as &quot;ahead right now,&quot; then a max-oriented structure over speeds is enough. If it models elapsed time and accumulated distance, then each car also needs enough information to compute its current position when queried.</p>
-<p>Because the archived description focused on a winner callback tied to updates, the useful preparation angle is the incremental-ranking design rather than one specific physics model.</p>
-<h2>Baseline Solution</h2>
-<p>The brute-force design is:</p>
-<ul><li>store the latest speed for every car in a hash map</li><li>on every <code>update</code>, rewrite that car's speed</li><li>scan all cars to find the maximum</li></ul>
-<p>This is easy to implement but too slow when the number of updates is large. If there are <code>N</code> cars, each update becomes <code>O(N)</code>.</p>
-<h2>Better Approach: Ordered Leader Tracking</h2>
-<p>A stronger solution keeps cars in an ordered structure keyed by the value that defines &quot;leading.&quot;</p>
-<p>Examples include:</p>
-<ul><li>a balanced tree keyed by <code>(score, car_id)</code></li><li>a max-heap with lazy deletion</li><li>a sorted set if the language provides one</li></ul>
-<p>Then each <code>update(car_id, speed)</code> works like this:</p>
-<ul><li>remove the old ranking record for that car, if it exists</li><li>write the new speed into the hash map</li><li>insert the updated ranking record</li><li>compare the new maximum with the previous leader</li><li>trigger the callback only if the leader actually changed</li></ul>
-<p>This turns repeated full scans into efficient incremental maintenance.</p>
-<h2>Why a Hash Map Alone Is Not Enough</h2>
-<p>A hash map is excellent for locating a car by id, but it does not preserve ordering. You still need a second structure for &quot;who is first right now?&quot;</p>
-<p>That separation is a common interview pattern:</p>
-<ul><li>hash map for direct access</li><li>heap or tree for ordered queries</li></ul>
-<p>Once you recognize that split, the design becomes much cleaner.</p>
-<h2>Handling Ties</h2>
-<p>Interviews often hide complexity in tie behavior. Ask clarifying questions such as:</p>
-<ul><li>If two cars have the same speed, which one wins?</li><li>Does earlier arrival break the tie?</li><li>Should the callback fire if the leader id stays the same but another car matches it?</li></ul>
-<p>A deterministic rule like <code>(speed desc, car_id asc)</code> is usually enough unless the interviewer defines something else.</p>
-<h2>If Distance Matters</h2>
-<p>Some variants care about actual position rather than just instantaneous speed. In that version, a car's distance depends on:</p>
-<ul><li>its last known speed</li><li>the time since its previous update</li></ul>
-<p>Then each <code>update</code> must first advance that car's accumulated distance before changing speed. The ordered key becomes current distance, not just speed.</p>
-<p>That follow-up is valuable because it shows you can extend the data model instead of hardcoding the simplest interpretation.</p>
-<h2>Complexity</h2>
-<p>With a hash map plus an ordered structure:</p>
-<ul><li>lookup/update by id is <code>O(log N)</code> if removal and reinsertion are needed</li><li>leader query is <code>O(1)</code> or <code>O(log N)</code>, depending on the structure</li><li>memory usage is <code>O(N)</code></li></ul>
-<p>That is a clear improvement over rescanning the entire field after every speed change.</p>
-<h2>What the Interviewer Is Really Testing</h2>
-<p>This problem is less about racing and more about maintaining a dynamic maximum under frequent updates.</p>
-<p>The key ideas are:</p>
-<ul><li>separate identity lookup from ranking lookup</li><li>update only the affected record</li><li>fire downstream notifications only on meaningful state changes</li></ul>
-<p>If you explain the brute-force method first and then evolve it into a map-plus-ordered-structure design, you will usually cover both correctness and scalability well.</p>
+<p>A car can be the fastest right now and still be behind. Before choosing a heap or a tree, define whether the leaderboard ranks current speed or accumulated distance.</p>
+<p>This guide uses the archived car-race topic as its starting point. The precise timing, tie-breaking, and callback rules below are explicit choices for this implementation, not claims about details recovered from the snapshot.</p>
+<h2>Two Different Leaderboards</h2>
+<p>For a speed leaderboard, the score changes only when a car receives a speed update. A map plus an ordered structure can maintain the maximum speed efficiently.</p>
+<p>For a distance leaderboard, every moving car's position changes with time. A faster car can overtake the leader between speed updates. Updating only one key in a heap of old distances does not keep that heap correctly ordered.</p>
+<p>The implementation below answers the distance version at explicit observation times. It gives a correct baseline before considering more advanced event scheduling.</p>
+<h2>Contract: Observe the Race at a Given Time</h2>
+<ul><li>Cars have unique string IDs and begin at position zero at time zero. The initial mapping contains nonnegative integer speeds and a fixed set of cars.</li><li>Times are nonnegative integers, shared by all cars. Calls must use nondecreasing times; multiple calls at the same time are processed in call order.</li><li><code>update(car_id, speed, t)</code> changes a known car's speed at time <code>t</code>. Its old speed applies up to <code>t</code>; its new speed applies afterward. New speeds are nonnegative integers.</li><li><code>leader(t)</code> returns the ID with the greatest distance at time <code>t</code>. Equal distances are resolved by the lexicographically smallest ID. An empty race returns <code>None</code>.</li><li>Both operations observe the leaderboard. A synchronous callback receives <code>(leader_id, t)</code> on the first nonempty observation and whenever the observed leader ID changes. An unchanged leader produces no callback.</li><li>The callback must return normally and must not call back into the race object. Input types and nonnegative speeds are caller preconditions; decreasing times and unknown update IDs are rejected.</li></ul>
+<p>This is an observation-based notification contract. It does not promise a callback at every physical overtaking instant between calls. At a speed-update timestamp, changing speed alone cannot change position.</p>
+<h2>Runnable Python Baseline</h2>
+<p>For each car, store its distance at its most recent speed update, its speed, and that update's timestamp. Its position at a later time is:</p>
+<pre><code>position(t) = saved_distance + speed * (t - saved_time)</code></pre>
+<p>Only the updated car needs its saved state advanced. A leader query evaluates every car at the same time.</p>
+<pre><code>class DistanceRace:
+    def __init__(self, speeds, on_change):
+        self.cars = {
+            car_id: (0, speed, 0)
+            for car_id, speed in speeds.items()
+        }
+        self.on_change = on_change
+        self.last_time = 0
+        self.last_leader = None
+
+    def _check_time(self, t):
+        if t &lt; self.last_time:
+            raise ValueError(&quot;timestamps must be nondecreasing&quot;)
+
+    def leader(self, t):
+        self._check_time(t)
+        self.last_time = t
+        best_id = None
+        best_position = None
+        for car_id, (distance, speed, saved_time) in self.cars.items():
+            position = distance + speed * (t - saved_time)
+            if (best_id is None or position &gt; best_position
+                    or (position == best_position and car_id &lt; best_id)):
+                best_id = car_id
+                best_position = position
+        if best_id != self.last_leader:
+            self.last_leader = best_id
+            self.on_change(best_id, t)
+        return best_id
+
+    def update(self, car_id, speed, t):
+        self._check_time(t)
+        distance, old_speed, saved_time = self.cars[car_id]
+        distance += old_speed * (t - saved_time)
+        self.cars[car_id] = (distance, speed, t)
+        return self.leader(t)</code></pre>
+<p>Python integers keep the integer-time examples exact. With fractional measurements, specify the numeric representation and tie policy before adapting the implementation.</p>
+<h2>Worked Example: Overtaking Without an Update</h2>
+<p>Car A starts at speed 10 and B at speed 4. At time 2, their distances are 20 and 8. A then slows to speed 1.</p>
+<ul><li>At time 2, A is still ahead: changing speed does not erase its lead.</li><li>At time 5, A is at 23 and B is at 20. B is faster, but A leads.</li><li>At time 6, both are at 24. The tie rule selects A.</li><li>At time 7, A is at 25 and B is at 28. B leads even though no new speed update occurred.</li></ul>
+<pre><code>events = []
+race = DistanceRace({&quot;A&quot;: 10, &quot;B&quot;: 4},
+                    lambda car_id, t: events.append((car_id, t)))
+assert race.leader(0) == &quot;A&quot;
+assert race.update(&quot;A&quot;, 1, 2) == &quot;A&quot;
+assert race.leader(5) == &quot;A&quot;
+assert race.leader(6) == &quot;A&quot;
+assert race.leader(7) == &quot;B&quot;
+assert race.leader(7) == &quot;B&quot;  # No duplicate notification.
+assert events == [(&quot;A&quot;, 0), (&quot;B&quot;, 7)]</code></pre>
+<p>The callback at time 7 reports the newly observed leader. It does not claim that the physical overtake happened exactly at time 7.</p>
+<h2>Why the Baseline Is Correct</h2>
+<p>The stored distance for each car is its true distance at its saved timestamp. Initially, that distance is zero. On an update, the old speed has remained constant since the saved timestamp, so adding <code>old_speed * elapsed_time</code> preserves this invariant before installing the new speed.</p>
+<p>A query uses that same invariant to compute every car's true position at the requested time. Scanning all positions and applying the ID tie rule therefore returns the specified leader. Comparing that ID with the previous observed leader implements exactly the notification contract.</p>
+<h2>Boundary Checks</h2>
+<pre><code>empty_events = []
+empty = DistanceRace({}, lambda car_id, t: empty_events.append((car_id, t)))
+assert empty.leader(0) is None
+assert empty_events == []
+
+still_events = []
+still = DistanceRace({&quot;B&quot;: 0, &quot;A&quot;: 0},
+                     lambda car_id, t: still_events.append((car_id, t)))
+assert still.leader(0) == &quot;A&quot;  # ID order, not dictionary order.
+assert still.update(&quot;B&quot;, 3, 0) == &quot;A&quot;  # Same-time position is unchanged.
+assert still.leader(1) == &quot;B&quot;
+assert still_events == [(&quot;A&quot;, 0), (&quot;B&quot;, 1)]
+
+try:
+    still.leader(0)
+except ValueError:
+    pass
+else:
+    raise AssertionError(&quot;backward time must be rejected&quot;)
+
+try:
+    still.update(&quot;missing&quot;, 1, 1)
+except KeyError:
+    pass
+else:
+    raise AssertionError(&quot;unknown car must be rejected&quot;)</code></pre>
+<p>Also test a single car, repeated speed changes, long idle intervals, and large integer distances. A useful independent reference advances every car on every event and compares both leader IDs and callback histories with this lazy-position implementation.</p>
+<h2>Complexity and the Speed-Only Optimization</h2>
+<p>For <code>N</code> cars, initialization takes <code>O(N)</code> time and storage. A distance query takes <code>O(N)</code> time and <code>O(1)</code> auxiliary space. An update changes one saved state in <code>O(1)</code> expected time, then scans for the callback, so the complete update operation is <code>O(N)</code>. These bounds treat arithmetic, ID comparisons, and callbacks as constant-cost operations; callback work is otherwise additional.</p>
+<p>If the requirement is explicitly highest current speed, a balanced tree keyed by <code>(-speed, car_id)</code> supports removing the old key and inserting the new one in <code>O(log N)</code> time with <code>O(N)</code> storage. Reading the winner costs <code>O(1)</code> with a cached minimum, or <code>O(log N)</code> with a tree lookup.</p>
+<p>A lazy heap is another speed-only option, but stale entries require care. Keep a current version per car and discard obsolete versions at the top. Without rebuilding, <code>U</code> updates can leave <code>O(N + U)</code> entries; one query may remove many stale entries. Do not claim worst-case <code>O(log N)</code> per call or <code>O(N)</code> storage for that implementation without additional bounds or compaction.</p>
+<p>For distance leaders, a static heap of saved positions is insufficient. Continuous overtake notifications require reasoning about future crossings, invalidating predictions when speeds change, and specifying ties at crossing times. That is a separate extension, not a consequence of replacing the speed key with a distance key.</p>
         <aside class="source">
     <h2>Archive Evidence</h2>
     <p><strong>Evidence tier:</strong> Gold</p>
