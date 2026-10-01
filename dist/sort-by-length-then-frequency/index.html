@@ -115,7 +115,7 @@
 <h2>Step 2: Sort Distinct Words</h2>
 <p>Now sort only the <code>K</code> distinct words. The comparator should:</p>
 <ul><li>prefer longer words</li><li>if lengths are equal, prefer larger frequencies</li></ul>
-<p>If the interviewer asks what happens when both length and frequency are equal, clarify the tie-break rule. A deterministic implementation can fall back to lexicographic order or first appearance, but that part is not required unless the prompt says so.</p>
+<p>If the interviewer asks what happens when both length and frequency are equal, make the contract explicit. This version uses ascending lexicographic order as the final tie-breaker, so the same input always produces the same output.</p>
 <h2>Example Walkthrough</h2>
 <p>Input:</p>
 <pre><code>[ABC, ABC, ABB, ABCDE, A, B, B, B]</code></pre>
@@ -131,24 +131,32 @@ A     -&gt; 1</code></pre>
 <ul><li><code>ABC</code> comes before <code>ABB</code></li><li><code>B</code> comes before <code>A</code></li></ul>
 <p>Final answer:</p>
 <pre><code>[ABCDE, ABC, ABB, B, A]</code></pre>
-<h2>Reference Approach</h2>
-<p>Pseudo-code:</p>
-<pre><code>count = empty map
-for word in words:
-    count[word] += 1
+<h2>Runnable Python Implementation</h2>
+<p>The function accepts an iterable of strings. An empty input returns an empty list; a non-string word raises <code>TypeError</code> rather than relying on an undefined comparison.</p>
+<pre><code>def sort_words(words):
+    counts = {}
+    for word in words:
+        if not isinstance(word, str):
+            raise TypeError(&quot;words must contain only strings&quot;)
+        counts[word] = counts.get(word, 0) + 1
 
-distinct = keys(count)
-sort distinct by:
-    1. length descending
-    2. count descending
-
-return distinct</code></pre>
+    return sorted(
+        counts,
+        key=lambda word: (-len(word), -counts[word], word),
+    )</code></pre>
+<p>The tuple key expresses the complete rule: negative length and count put larger values first, while <code>word</code> puts otherwise tied strings in ascending lexicographic order.</p>
+<h2>Deterministic Tie-Break Example</h2>
+<p>For <code>[&quot;bb&quot;, &quot;aa&quot;, &quot;bb&quot;, &quot;aa&quot;]</code>, both words have length <code>2</code> and frequency <code>2</code>. The final lexicographic rule returns:</p>
+<pre><code>[aa, bb]</code></pre>
+<p>This final rule matters in an interview implementation: without it, two valid-looking runs may return different orderings for equal primary keys.</p>
+<h2>Why It Works</h2>
+<p>The counting loop records the exact occurrence count for every distinct word. <code>sorted</code> then compares every distinct word using the required ordering tuple: length first, frequency second, and the explicit lexical rule last. Therefore every returned word is distinct and the full output order follows the stated contract.</p>
 <h2>Complexity</h2>
 <ul><li>Counting frequencies: <code>O(N)</code></li><li>Sorting distinct words: <code>O(K log K)</code></li><li>Extra space: <code>O(K)</code></li></ul>
 <p>This is usually the intended solution because the expensive sort is applied only to the distinct words, not to the full input.</p>
 <h2>Interview Follow-Up</h2>
 <p>Useful clarifications include:</p>
-<ul><li>Should ties be broken alphabetically or by original appearance?</li><li>Are comparisons case-sensitive?</li><li>Can the input contain empty strings?</li><li>Do we need the final list only, or also the frequencies?</li></ul>
+<ul><li>Should the final tie-break be alphabetical or original appearance? This version uses alphabetical order.</li><li>Are comparisons case-sensitive? This version is case-sensitive because Python string comparison is case-sensitive.</li><li>Can the input contain empty strings? Yes: an empty string is a valid string and is sorted by the same rules.</li><li>Do we need the final list only, or also the frequencies?</li></ul>
 <p>The main skill here is recognizing that the problem is not about repeated pairwise comparison. It is about aggregating first, then sorting by a composite key.</p>
         <aside class="source">
     <h2>Archive Evidence</h2>

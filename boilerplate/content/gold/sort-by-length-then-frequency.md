@@ -61,7 +61,7 @@ Now sort only the `K` distinct words. The comparator should:
 - prefer longer words
 - if lengths are equal, prefer larger frequencies
 
-If the interviewer asks what happens when both length and frequency are equal, clarify the tie-break rule. A deterministic implementation can fall back to lexicographic order or first appearance, but that part is not required unless the prompt says so.
+If the interviewer asks what happens when both length and frequency are equal, make the contract explicit. This version uses ascending lexicographic order as the final tie-breaker, so the same input always produces the same output.
 
 ## Example Walkthrough
 
@@ -98,22 +98,39 @@ Final answer:
 [ABCDE, ABC, ABB, B, A]
 ```
 
-## Reference Approach
+## Runnable Python Implementation
 
-Pseudo-code:
+The function accepts an iterable of strings. An empty input returns an empty list; a non-string word raises `TypeError` rather than relying on an undefined comparison.
+
+```python
+def sort_words(words):
+    counts = {}
+    for word in words:
+        if not isinstance(word, str):
+            raise TypeError("words must contain only strings")
+        counts[word] = counts.get(word, 0) + 1
+
+    return sorted(
+        counts,
+        key=lambda word: (-len(word), -counts[word], word),
+    )
+```
+
+The tuple key expresses the complete rule: negative length and count put larger values first, while `word` puts otherwise tied strings in ascending lexicographic order.
+
+## Deterministic Tie-Break Example
+
+For `["bb", "aa", "bb", "aa"]`, both words have length `2` and frequency `2`. The final lexicographic rule returns:
 
 ```text
-count = empty map
-for word in words:
-    count[word] += 1
-
-distinct = keys(count)
-sort distinct by:
-    1. length descending
-    2. count descending
-
-return distinct
+[aa, bb]
 ```
+
+This final rule matters in an interview implementation: without it, two valid-looking runs may return different orderings for equal primary keys.
+
+## Why It Works
+
+The counting loop records the exact occurrence count for every distinct word. `sorted` then compares every distinct word using the required ordering tuple: length first, frequency second, and the explicit lexical rule last. Therefore every returned word is distinct and the full output order follows the stated contract.
 
 ## Complexity
 
@@ -127,9 +144,9 @@ This is usually the intended solution because the expensive sort is applied only
 
 Useful clarifications include:
 
-- Should ties be broken alphabetically or by original appearance?
-- Are comparisons case-sensitive?
-- Can the input contain empty strings?
+- Should the final tie-break be alphabetical or original appearance? This version uses alphabetical order.
+- Are comparisons case-sensitive? This version is case-sensitive because Python string comparison is case-sensitive.
+- Can the input contain empty strings? Yes: an empty string is a valid string and is sorted by the same rules.
 - Do we need the final list only, or also the frequencies?
 
 The main skill here is recognizing that the problem is not about repeated pairwise comparison. It is about aggregating first, then sorting by a composite key.
