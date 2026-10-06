@@ -23,7 +23,7 @@ Before choosing an algorithm, ask what the function should return:
 - How should negative inputs be handled?
 - If the result is approximate, what error tolerance is acceptable?
 
-Those details change both the algorithm and its stopping condition. In most interview versions, an integer square-root function accepts `N >= 0` and returns the greatest integer `r` such that `r * r <= N`.
+Those details change both the algorithm and its stopping condition. In most interview versions, an integer square-root function accepts a non-negative integer `N` and returns the greatest integer `r` such that `r * r <= N`. This guide rejects negative values with `ValueError` and non-integers (including `True` and `False`) with `TypeError`.
 
 ## Approach 1: Binary Search for an Integer Square Root
 
@@ -41,24 +41,24 @@ Handle `0` and `1` directly. For `N >= 2`, the answer lies in `[1, floor(N / 2)]
 
 The division comparison matters. In a fixed-width integer type, `mid * mid` may overflow before it is compared with `N`. Comparing `mid <= N / mid` expresses the same condition without performing the risky multiplication.
 
-### Reference Pseudocode
+### Runnable Python
 
-```text
-integerSquareRoot(n):
+```python
+def integer_square_root(n: int) -> int:
+    """Return floor(sqrt(n)) for a non-negative integer."""
+    if isinstance(n, bool) or not isinstance(n, int):
+        raise TypeError("n must be an integer")
     if n < 0:
-        error "square root is undefined for negative real numbers"
-
+        raise ValueError("n must be non-negative")
     if n < 2:
         return n
 
-    low = 1
-    high = floor(n / 2)
+    low, high = 1, n // 2
     answer = 1
 
     while low <= high:
-        mid = low + floor((high - low) / 2)
-
-        if mid <= floor(n / mid):
+        mid = low + (high - low) // 2
+        if mid <= n // mid:
             answer = mid
             low = mid + 1
         else:
@@ -67,7 +67,7 @@ integerSquareRoot(n):
     return answer
 ```
 
-The variable `answer` preserves the largest midpoint whose square does not exceed `N`. That is exactly the definition of `floor(sqrt(N))`.
+The variable `answer` preserves the largest midpoint whose square does not exceed `N`. The `n // mid` comparison avoids forming `mid * mid`, which is important in fixed-width integer languages. That is exactly the definition of `floor(sqrt(N))`.
 
 ## Worked Binary Search Example
 
@@ -139,8 +139,10 @@ The complexity statement for Newton's method depends on the numeric model and pr
 
 - `N = 0`: return `0` before any division.
 - `N = 1`: return `1` directly.
+- `N = 2` and `N = 3`: return `1`; they are the smallest non-perfect-square inputs.
 - `0 < N < 1`: a decimal implementation should not use `N / 2` as an upper bound because the square root is greater than `N`.
-- Negative input: reject it unless complex-number output is part of the contract.
+- Negative input: reject it unless complex-number output is part of the contract. The Python function above raises `ValueError`.
+- Non-integer input: reject it for the integer-floor contract. The Python function raises `TypeError`, including for booleans.
 - Large integers: avoid `mid * mid` unless the language provides a wider safe type.
 - Approximate output: define the tolerance and ensure the iteration cannot divide by zero.
 

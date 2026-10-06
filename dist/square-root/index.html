@@ -98,36 +98,36 @@
 <h2>Clarify the Contract First</h2>
 <p>Before choosing an algorithm, ask what the function should return:</p>
 <ul><li>For an integer input, should the answer be <code>floor(sqrt(N))</code>?</li><li>Should a non-perfect square produce a decimal approximation?</li><li>How should negative inputs be handled?</li><li>If the result is approximate, what error tolerance is acceptable?</li></ul>
-<p>Those details change both the algorithm and its stopping condition. In most interview versions, an integer square-root function accepts <code>N &gt;= 0</code> and returns the greatest integer <code>r</code> such that <code>r * r &lt;= N</code>.</p>
+<p>Those details change both the algorithm and its stopping condition. In most interview versions, an integer square-root function accepts a non-negative integer <code>N</code> and returns the greatest integer <code>r</code> such that <code>r * r &lt;= N</code>. This guide rejects negative values with <code>ValueError</code> and non-integers (including <code>True</code> and <code>False</code>) with <code>TypeError</code>.</p>
 <h2>Approach 1: Binary Search for an Integer Square Root</h2>
 <p>If the goal is to compute <code>floor(sqrt(N))</code> for a non-negative integer <code>N</code>, binary search is a direct and reliable approach. The answer must lie in a bounded interval, and the square function is monotonic on non-negative numbers.</p>
 <p>Handle <code>0</code> and <code>1</code> directly. For <code>N &gt;= 2</code>, the answer lies in <code>[1, floor(N / 2)]</code>, so there is no reason to search all the way to <code>N</code>.</p>
 <h3>Binary Search Details</h3>
 <ul><li>Set <code>low = 1</code> and <code>high = floor(N / 2)</code>.</li><li>Compute <code>mid = low + (high - low) / 2</code>.</li><li>If <code>mid &lt;= N / mid</code>, store <code>mid</code> as the current best answer and move right.</li><li>Otherwise, move left.</li><li>When the search ends, return the best valid midpoint.</li></ul>
 <p>The division comparison matters. In a fixed-width integer type, <code>mid * mid</code> may overflow before it is compared with <code>N</code>. Comparing <code>mid &lt;= N / mid</code> expresses the same condition without performing the risky multiplication.</p>
-<h3>Reference Pseudocode</h3>
-<pre><code>integerSquareRoot(n):
+<h3>Runnable Python</h3>
+<pre><code>def integer_square_root(n: int) -&gt; int:
+    &quot;&quot;&quot;Return floor(sqrt(n)) for a non-negative integer.&quot;&quot;&quot;
+    if isinstance(n, bool) or not isinstance(n, int):
+        raise TypeError(&quot;n must be an integer&quot;)
     if n &lt; 0:
-        error &quot;square root is undefined for negative real numbers&quot;
-
+        raise ValueError(&quot;n must be non-negative&quot;)
     if n &lt; 2:
         return n
 
-    low = 1
-    high = floor(n / 2)
+    low, high = 1, n // 2
     answer = 1
 
     while low &lt;= high:
-        mid = low + floor((high - low) / 2)
-
-        if mid &lt;= floor(n / mid):
+        mid = low + (high - low) // 2
+        if mid &lt;= n // mid:
             answer = mid
             low = mid + 1
         else:
             high = mid - 1
 
     return answer</code></pre>
-<p>The variable <code>answer</code> preserves the largest midpoint whose square does not exceed <code>N</code>. That is exactly the definition of <code>floor(sqrt(N))</code>.</p>
+<p>The variable <code>answer</code> preserves the largest midpoint whose square does not exceed <code>N</code>. The <code>n // mid</code> comparison avoids forming <code>mid * mid</code>, which is important in fixed-width integer languages. That is exactly the definition of <code>floor(sqrt(N))</code>.</p>
 <h2>Worked Binary Search Example</h2>
 <p>For <code>N = 27</code>, search the interval <code>[1, 13]</code>:</p>
 <pre><code>mid = 7   -&gt; 7 &gt; 27 / 7, so move left
@@ -169,7 +169,7 @@ mid = 6   -&gt; 6 &gt; 27 / 6, so move left</code></pre>
 <ul><li>Binary search: <code>O(log N)</code> time and <code>O(1)</code> extra space.</li><li>Newton's method: <code>O(log P)</code> iterations for roughly <code>P</code> bits of precision under standard assumptions, with <code>O(1)</code> extra space.</li></ul>
 <p>The complexity statement for Newton's method depends on the numeric model and precision target, so avoid claiming that it is simply <code>O(log N)</code> without explaining what is being measured.</p>
 <h2>Edge Cases</h2>
-<ul><li><code>N = 0</code>: return <code>0</code> before any division.</li><li><code>N = 1</code>: return <code>1</code> directly.</li><li><code>0 &lt; N &lt; 1</code>: a decimal implementation should not use <code>N / 2</code> as an upper bound because the square root is greater than <code>N</code>.</li><li>Negative input: reject it unless complex-number output is part of the contract.</li><li>Large integers: avoid <code>mid * mid</code> unless the language provides a wider safe type.</li><li>Approximate output: define the tolerance and ensure the iteration cannot divide by zero.</li></ul>
+<ul><li><code>N = 0</code>: return <code>0</code> before any division.</li><li><code>N = 1</code>: return <code>1</code> directly.</li><li><code>N = 2</code> and <code>N = 3</code>: return <code>1</code>; they are the smallest non-perfect-square inputs.</li><li><code>0 &lt; N &lt; 1</code>: a decimal implementation should not use <code>N / 2</code> as an upper bound because the square root is greater than <code>N</code>.</li><li>Negative input: reject it unless complex-number output is part of the contract. The Python function above raises <code>ValueError</code>.</li><li>Non-integer input: reject it for the integer-floor contract. The Python function raises <code>TypeError</code>, including for booleans.</li><li>Large integers: avoid <code>mid * mid</code> unless the language provides a wider safe type.</li><li>Approximate output: define the tolerance and ensure the iteration cannot divide by zero.</li></ul>
 <h2>Common Mistakes</h2>
 <ul><li>solving the decimal version when the interviewer asked for an integer floor</li><li>returning the last midpoint instead of the largest valid midpoint</li><li>overflowing while evaluating <code>mid * mid</code></li><li>forgetting that <code>0</code> needs special handling in Newton's formula</li><li>comparing floating-point values for exact equality</li><li>using a tolerance without stating what accuracy it guarantees</li></ul>
 <h2>Why the Binary Search Is Correct</h2>
