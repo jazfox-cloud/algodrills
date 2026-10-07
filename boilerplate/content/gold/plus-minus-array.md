@@ -25,6 +25,8 @@ Typical interview variants include:
 
 Because the title alone does not define one exact variant, the most useful interview preparation is to know the contract questions, the baseline partition strategy, and the follow-up for stable alternation.
 
+This guide uses one concrete rule in its runnable examples: a value less than `0` is negative, while `0` belongs with the non-negative values. Both functions return a new list and leave the caller's input unchanged.
+
 ## Clarify the Variant First
 
 Before you start coding, pin down four details:
@@ -56,6 +58,28 @@ This is the best answer when:
 - the interviewer does not require stable order
 - only the final sign partition matters
 - in-place space usage is more important than preserving the original sequence
+
+### Runnable Python: Partitioning
+
+```python
+def partition_negatives_first(values):
+    """Return an unstable negative/non-negative partition without mutating values."""
+    result = list(values)
+    left = 0
+    right = len(result) - 1
+
+    while left <= right:
+        while left <= right and result[left] < 0:
+            left += 1
+        while left <= right and result[right] >= 0:
+            right -= 1
+        if left < right:
+            result[left], result[right] = result[right], result[left]
+
+    return result
+```
+
+The two-pointer work itself needs constant auxiliary state. This presentation copies the input so its return-value contract is easy to test; when mutation is allowed, run the same loop directly on the input list.
 
 ## Worked Partition Example
 
@@ -124,6 +148,25 @@ result     = [-2, 3, -5, 6, -1, 4]
 
 This is usually the safest answer when correctness and clarity matter more than squeezing space to `O(1)`.
 
+### Runnable Python: Stable Alternation
+
+```python
+def alternate_signs_stable(values):
+    """Start negative, then alternate while preserving order within each group."""
+    negatives = [value for value in values if value < 0]
+    non_negatives = [value for value in values if value >= 0]
+    result = []
+
+    for negative, non_negative in zip(negatives, non_negatives):
+        result.extend((negative, non_negative))
+
+    result.extend(negatives[len(non_negatives):])
+    result.extend(non_negatives[len(negatives):])
+    return result
+```
+
+For `[3, -2, 0, -5, 6, -1, 4]`, the two groups are `[-2, -5, -1]` and `[3, 0, 6, 4]`. The result is `[-2, 3, -5, 0, -1, 6, 4]`: each group remains in its original order, and the longer group supplies the tail.
+
 ## Stability Matters
 
 The main follow-up question is whether you must preserve the original left-to-right order within the negative group and within the positive group.
@@ -133,65 +176,7 @@ The main follow-up question is whether you must preserve the original left-to-ri
 
 A stable solution usually collects negatives and positives separately, then writes them back in the required pattern. That approach is easy to reason about and still runs in linear time, although it uses `O(N)` extra space.
 
-## Reference Pseudocode
-
-### Unstable Partition
-
-```text
-partitionBySign(arr):
-    left = 0
-    right = arr.length - 1
-
-    while left <= right:
-        while left <= right and arr[left] < 0:
-            left += 1
-
-        while left <= right and arr[right] >= 0:
-            right -= 1
-
-        if left < right:
-            swap(arr[left], arr[right])
-
-    return arr
-```
-
-This example treats `0` as non-negative. That rule is not universal, so say it out loud.
-
-### Stable Alternation
-
-```text
-alternateStable(arr):
-    negatives = []
-    positives = []
-
-    for value in arr:
-        if value < 0:
-            negatives.append(value)
-        else:
-            positives.append(value)
-
-    result = []
-    i = 0
-    j = 0
-
-    while i < negatives.length and j < positives.length:
-        result.append(negatives[i])
-        result.append(positives[j])
-        i += 1
-        j += 1
-
-    while i < negatives.length:
-        result.append(negatives[i])
-        i += 1
-
-    while j < positives.length:
-        result.append(positives[j])
-        j += 1
-
-    return result
-```
-
-If the interview requires the output to start with a positive number instead, only the merge order changes.
+If the interview requires the output to start with a non-negative number instead, only the merge order changes.
 
 ## Choosing Between In-Place and Stable
 
@@ -207,7 +192,7 @@ Trying to force a stable alternating arrangement in place often leads to rotatio
 
 - Arrays containing only positive numbers
 - Arrays containing only negative numbers
-- Zero values, which should be classified explicitly based on the problem statement
+- Zero values; this guide treats them as non-negative, but an interview prompt may differ
 - Unequal counts, where one sign must occupy the tail of the result
 
 ## Common Mistakes
