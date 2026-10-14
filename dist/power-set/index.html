@@ -96,8 +96,8 @@
         <h1>Power Set Generation: Two Practical Interview Approaches</h1>
 <p>A power set contains every subset of a set, including the empty set and the original set. For <code>N</code> distinct elements, it contains exactly <code>2^N</code> subsets: each element can be included or excluded.</p>
 <h2>Input and Output Contract</h2>
-<p>The Python functions below accept a list of distinct integers and return a list of subsets, each represented by a new list. They preserve the input order within each subset and do not modify the input. The order of the subsets may differ between implementations.</p>
-<ul><li>Empty input returns <code>[[]]</code>: the empty set has one subset.</li><li>Negative values and zero work like any other values.</li><li>Distinct elements are a precondition, not a runtime check. With <code>[1, 1]</code>, these functions treat the two positions separately and produce repeated value-based subsets. If the question asks for unique subsets of an array with duplicates, use a separate duplicate-aware algorithm, such as sorting and skipping equal choices at the same recursion depth.</li></ul>
+<p>The first two Python functions below accept a list of distinct integers and return a list of subsets, each represented by a new list. They preserve the input order within each subset and do not modify the input. The order of the subsets may differ between implementations.</p>
+<ul><li>Empty input returns <code>[[]]</code>: the empty set has one subset.</li><li>Negative values and zero work like any other values.</li><li>Distinct elements are a precondition, not a runtime check. With <code>[1, 1]</code>, these functions treat the two positions separately and produce repeated value-based subsets. For unique subsets of an array with duplicates, use <code>power_set_unique</code> in the duplicate-aware section below.</li></ul>
 <h2>Approach 1: Bit Masking</h2>
 <p>Use one bit for each input position. In a mask, bit <code>j</code> is <code>1</code> exactly when <code>nums[j]</code> belongs to the subset. Enumerating all integers from <code>0</code> through <code>(1 &lt;&lt; N) - 1</code> visits every possible inclusion pattern.</p>
 <pre><code>def power_set_masks(nums):
@@ -165,6 +165,53 @@ for generate in (power_set_masks, power_set_backtracking):
 <p>For <code>N &gt;= 1</code>, both implementations take <code>O(N * 2^N)</code> time when they materialize every subset. Bit masking checks <code>N</code> positions for every mask. Backtracking visits <code>O(2^N)</code> tree nodes, but copying all paths costs <code>N * 2^(N - 1)</code> element copies: each element appears in half of the subsets.</p>
 <p>The returned result uses <code>O(N * 2^N)</code> space, including the subset contents. Excluding that result, bit masking uses at most <code>O(N)</code> working space for its current subset, and backtracking uses <code>O(N)</code> for its path and recursion stack. Empty input takes constant time and space.</p>
 <p>These are the usual interview bounds with constant-cost index and bit operations. Python integers have arbitrary precision, so operations on very large masks are not literally constant time. In practice, storing exponentially many subsets becomes the main limitation long before a large input is feasible; recursive code also has a recursion-depth limit.</p>
+<h2>Power Set with Duplicate Values: Generating Unique Subsets</h2>
+<p>This is an original extension of the recovered power-set topic. The duplicate-aware contract and implementation here are editorial additions, not details claimed from the archived snapshot.</p>
+<p>When the input is <code>[1, 2, 2]</code>, selecting either copy of <code>2</code> alone gives the same value-based subset. We want <code>[2]</code> once, while still allowing <code>[2, 2]</code>. Each value may appear up to its input frequency; these are submultisets rather than the ordinary power set of distinct values.</p>
+<h3>Contract and Runnable Python</h3>
+<p><code>power_set_unique</code> accepts a list of integers, including duplicates, negative values, and zero. It returns each value-based subset exactly once, with values sorted within each subset. It sorts a copy, leaving the input unchanged, and returns independent lists. Empty input returns <code>[[]]</code>.</p>
+<pre><code>def power_set_unique(nums):
+    values = sorted(nums)
+    result = []
+    path = []
+
+    def visit(start):
+        result.append(path.copy())
+        for i in range(start, len(values)):
+            if i &gt; start and values[i] == values[i - 1]:
+                continue
+            path.append(values[i])
+            visit(i + 1)
+            path.pop()
+
+    visit(0)
+    return result</code></pre>
+<p>Skip equal choices only at the same recursion depth. After choosing the first <code>2</code>, the recursive call starts at the second <code>2</code>, so <code>i == start</code> permits choosing it too. Skipping every adjacent duplicate would incorrectly remove <code>[2, 2]</code>.</p>
+<h3>Worked Example: <code>[1, 2, 2]</code></h3>
+<p>The traversal first saves <code>[]</code>. Choosing <code>1</code> produces <code>[1]</code>, <code>[1, 2]</code>, and <code>[1, 2, 2]</code>; the second <code>2</code> is skipped as an alternative first choice after <code>1</code>. Returning to the root, choosing the first <code>2</code> produces <code>[2]</code> and <code>[2, 2]</code>. The second root-level <code>2</code> is skipped.</p>
+<pre><code>assert power_set_unique([1, 2, 2]) == [
+    [], [1], [1, 2], [1, 2, 2], [2], [2, 2],
+]
+assert power_set_unique([]) == [[]]
+assert power_set_unique([2, 2, 2]) == [[], [2], [2, 2], [2, 2, 2]]
+assert power_set_unique([-1, -1, 0]) == [
+    [], [-1], [-1, -1], [-1, -1, 0], [-1, 0], [0],
+]
+
+nums = [2, 1, 2]
+subsets = power_set_unique(nums)
+assert nums == [2, 1, 2]
+assert len(subsets) == len({tuple(s) for s in subsets}) == 6
+subsets[0].append(99)
+assert all(99 not in s for s in subsets[1:])
+assert nums == [2, 1, 2]</code></pre>
+<h3>Why It Is Complete and Unique</h3>
+<p>At each call, <code>path</code> is sorted and uses only positions before <code>start</code>. Any nonempty extension can choose its next value from the remaining positions. Choosing the first available copy leaves enough later copies to construct every permitted repetition of that value, so skipping later equal starting choices loses no value-based subset.</p>
+<p>Conversely, at a given depth only one branch starts with each value. Any two different output paths must differ in their first unequal value or their length. Thus no value-based subset is emitted twice. Copying the path saves the current subset, and popping restores it for the next branch.</p>
+<h3>Output Count and Complexity</h3>
+<p>If the distinct values have frequencies <code>c1, c2, ..., cm</code>, the number of unique subsets is <code>U = (c1 + 1) * (c2 + 1) * ... * (cm + 1)</code>: independently choose zero through <code>cj</code> copies of each value. For <code>[1, 2, 2]</code>, that is <code>2 * 3 = 6</code>, rather than eight position-based selections.</p>
+<p>For <code>N &gt;= 1</code>, sorting takes <code>O(N log N)</code> time. There are <code>U</code> recursive calls, each scanning at most <code>N</code> positions and copying a path of length at most <code>N</code>, giving an upper bound of <code>O(N log N + N * U)</code> time. The worst case remains <code>O(N * 2^N)</code> when all values are distinct.</p>
+<p>Let <code>S</code> be the total number of elements across the returned subsets. Output storage is <code>O(U + S)</code>, bounded by <code>O((N + 1) * U)</code>. Excluding output, the sorted copy, sorting workspace, path, and recursion stack use <code>O(N)</code> space. Empty input takes constant time and space. These bounds assume constant-cost integer comparisons; Python recursion limits still apply.</p>
 <h2>Choosing Between Them</h2>
 <p>Use bit masking for a compact iterative solution when every subset is required. Use backtracking when the interview introduces constraints or pruning. Neither approach makes a large power set cheap to produce. Before generating results, clarify whether the interviewer needs all subsets, just their count, or subsets meeting a condition.</p>
 <h2>Related Guide</h2>

@@ -15,11 +15,11 @@ A power set contains every subset of a set, including the empty set and the orig
 
 ## Input and Output Contract
 
-The Python functions below accept a list of distinct integers and return a list of subsets, each represented by a new list. They preserve the input order within each subset and do not modify the input. The order of the subsets may differ between implementations.
+The first two Python functions below accept a list of distinct integers and return a list of subsets, each represented by a new list. They preserve the input order within each subset and do not modify the input. The order of the subsets may differ between implementations.
 
 - Empty input returns `[[]]`: the empty set has one subset.
 - Negative values and zero work like any other values.
-- Distinct elements are a precondition, not a runtime check. With `[1, 1]`, these functions treat the two positions separately and produce repeated value-based subsets. If the question asks for unique subsets of an array with duplicates, use a separate duplicate-aware algorithm, such as sorting and skipping equal choices at the same recursion depth.
+- Distinct elements are a precondition, not a runtime check. With `[1, 1]`, these functions treat the two positions separately and produce repeated value-based subsets. For unique subsets of an array with duplicates, use `power_set_unique` in the duplicate-aware section below.
 
 ## Approach 1: Bit Masking
 
@@ -123,6 +123,74 @@ For `N >= 1`, both implementations take `O(N * 2^N)` time when they materialize 
 The returned result uses `O(N * 2^N)` space, including the subset contents. Excluding that result, bit masking uses at most `O(N)` working space for its current subset, and backtracking uses `O(N)` for its path and recursion stack. Empty input takes constant time and space.
 
 These are the usual interview bounds with constant-cost index and bit operations. Python integers have arbitrary precision, so operations on very large masks are not literally constant time. In practice, storing exponentially many subsets becomes the main limitation long before a large input is feasible; recursive code also has a recursion-depth limit.
+
+## Power Set with Duplicate Values: Generating Unique Subsets
+
+This is an original extension of the recovered power-set topic. The duplicate-aware contract and implementation here are editorial additions, not details claimed from the archived snapshot.
+
+When the input is `[1, 2, 2]`, selecting either copy of `2` alone gives the same value-based subset. We want `[2]` once, while still allowing `[2, 2]`. Each value may appear up to its input frequency; these are submultisets rather than the ordinary power set of distinct values.
+
+### Contract and Runnable Python
+
+`power_set_unique` accepts a list of integers, including duplicates, negative values, and zero. It returns each value-based subset exactly once, with values sorted within each subset. It sorts a copy, leaving the input unchanged, and returns independent lists. Empty input returns `[[]]`.
+
+```python
+def power_set_unique(nums):
+    values = sorted(nums)
+    result = []
+    path = []
+
+    def visit(start):
+        result.append(path.copy())
+        for i in range(start, len(values)):
+            if i > start and values[i] == values[i - 1]:
+                continue
+            path.append(values[i])
+            visit(i + 1)
+            path.pop()
+
+    visit(0)
+    return result
+```
+
+Skip equal choices only at the same recursion depth. After choosing the first `2`, the recursive call starts at the second `2`, so `i == start` permits choosing it too. Skipping every adjacent duplicate would incorrectly remove `[2, 2]`.
+
+### Worked Example: `[1, 2, 2]`
+
+The traversal first saves `[]`. Choosing `1` produces `[1]`, `[1, 2]`, and `[1, 2, 2]`; the second `2` is skipped as an alternative first choice after `1`. Returning to the root, choosing the first `2` produces `[2]` and `[2, 2]`. The second root-level `2` is skipped.
+
+```python
+assert power_set_unique([1, 2, 2]) == [
+    [], [1], [1, 2], [1, 2, 2], [2], [2, 2],
+]
+assert power_set_unique([]) == [[]]
+assert power_set_unique([2, 2, 2]) == [[], [2], [2, 2], [2, 2, 2]]
+assert power_set_unique([-1, -1, 0]) == [
+    [], [-1], [-1, -1], [-1, -1, 0], [-1, 0], [0],
+]
+
+nums = [2, 1, 2]
+subsets = power_set_unique(nums)
+assert nums == [2, 1, 2]
+assert len(subsets) == len({tuple(s) for s in subsets}) == 6
+subsets[0].append(99)
+assert all(99 not in s for s in subsets[1:])
+assert nums == [2, 1, 2]
+```
+
+### Why It Is Complete and Unique
+
+At each call, `path` is sorted and uses only positions before `start`. Any nonempty extension can choose its next value from the remaining positions. Choosing the first available copy leaves enough later copies to construct every permitted repetition of that value, so skipping later equal starting choices loses no value-based subset.
+
+Conversely, at a given depth only one branch starts with each value. Any two different output paths must differ in their first unequal value or their length. Thus no value-based subset is emitted twice. Copying the path saves the current subset, and popping restores it for the next branch.
+
+### Output Count and Complexity
+
+If the distinct values have frequencies `c1, c2, ..., cm`, the number of unique subsets is `U = (c1 + 1) * (c2 + 1) * ... * (cm + 1)`: independently choose zero through `cj` copies of each value. For `[1, 2, 2]`, that is `2 * 3 = 6`, rather than eight position-based selections.
+
+For `N >= 1`, sorting takes `O(N log N)` time. There are `U` recursive calls, each scanning at most `N` positions and copying a path of length at most `N`, giving an upper bound of `O(N log N + N * U)` time. The worst case remains `O(N * 2^N)` when all values are distinct.
+
+Let `S` be the total number of elements across the returned subsets. Output storage is `O(U + S)`, bounded by `O((N + 1) * U)`. Excluding output, the sorted copy, sorting workspace, path, and recursion stack use `O(N)` space. Empty input takes constant time and space. These bounds assume constant-cost integer comparisons; Python recursion limits still apply.
 
 ## Choosing Between Them
 
