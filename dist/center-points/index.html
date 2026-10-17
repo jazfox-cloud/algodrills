@@ -95,6 +95,7 @@
       <article class="article">
         <h1>Center Points: Midpoints and Geometric Centers in Interview Problems</h1>
 <p>Questions about center points usually belong to the geometry side of interview prep. The title alone does not lock the problem to one exact task, so the safest way to prepare is to understand the common interpretations that interviewers use when they ask for the center of points.</p>
+<p>The implementations and contracts below are independent educational examples built around the archived topic. They do not imply that the snapshot specified these exact variants.</p>
 <h2>Problem</h2>
 <p>Given points in one or more dimensions, compute a point that represents the center under a clearly defined rule.</p>
 <p>The first thing to clarify is which definition of center the interviewer wants. Common variants include:</p>
@@ -107,7 +108,7 @@
 <p>In higher dimensions, apply the same idea coordinate by coordinate.</p>
 <p>This runs in <code>O(1)</code> time and uses <code>O(1)</code> extra space.</p>
 <h2>Variant 2: Centroid of Many Points</h2>
-<p>If the input contains many points and the interviewer wants the geometric center, they often mean the centroid.</p>
+<p>If the interviewer defines the center as the average position of equally weighted input points, compute the centroid. The phrase &quot;geometric center&quot; alone does not establish that definition.</p>
 <p>For points:</p>
 <pre><code>(x1, y1), (x2, y2), ..., (xn, yn)</code></pre>
 <p>compute:</p>
@@ -119,16 +120,77 @@ centroid_y = (y1 + y2 + ... + yn) / n</code></pre>
 <p>In that case:</p>
 <p>1. find <code>minX</code>, <code>maxX</code>, <code>minY</code>, and <code>maxY</code> 2. return <code>((minX + maxX) / 2, (minY + maxY) / 2)</code></p>
 <p>This gives the center of the axis-aligned box that contains all points. It is useful when outliers matter for shape coverage but you do not want to average every coordinate.</p>
+<h2>Choosing the Right Center</h2>
+<p>Use the wording of the task to pick the rule before calculating anything:</p>
+<ul><li>Two endpoints or a line segment: use the midpoint.</li><li>Average location of every point: use the centroid.</li><li>Center of the smallest axis-aligned enclosure: use the bounding-box center.</li><li>Minimum total Manhattan distance in one dimension: consider a median instead of a centroid.</li></ul>
+<p>For example, with points <code>(0, 0)</code>, <code>(2, 2)</code>, and <code>(8, 2)</code>, the centroid is <code>(10 / 3, 4 / 3)</code>. The bounding-box center is <code>(4, 1)</code>, because the box runs from <code>x = 0</code> to <code>8</code> and from <code>y = 0</code> to <code>2</code>. Both are valid calculations, but they answer different questions.</p>
+<h2>Runnable Python with Exact Results</h2>
+<p>These examples use two-dimensional integer coordinates, including negative and arbitrarily large integers. Each point must contain exactly two integer coordinates; this is a caller precondition. <code>midpoint</code> takes two points. The other functions accept a finite iterable of points, consume it once, and raise <code>ValueError</code> for empty input. They do not modify the points or an input list, although an input iterator is consumed.</p>
+<p>Results are pairs of standard-library <code>Fraction</code> values, so a center such as <code>(10 / 3, 4 / 3)</code> stays exact. Duplicate points count as separate observations for the centroid; they do not change the bounding box. A single point is its own center under both definitions.</p>
+<pre><code>from fractions import Fraction
+
+
+def midpoint(a, b):
+    ax, ay = a
+    bx, by = b
+    return Fraction(ax + bx, 2), Fraction(ay + by, 2)
+
+
+def centroid(points):
+    total_x = total_y = count = 0
+    for x, y in points:
+        total_x += x
+        total_y += y
+        count += 1
+    if count == 0:
+        raise ValueError(&quot;centroid requires at least one point&quot;)
+    return Fraction(total_x, count), Fraction(total_y, count)
+
+
+def bounding_box_center(points):
+    points = iter(points)
+    try:
+        first_x, first_y = next(points)
+    except StopIteration:
+        raise ValueError(&quot;bounding box requires at least one point&quot;) from None
+    min_x = max_x = first_x
+    min_y = max_y = first_y
+    for x, y in points:
+        min_x = min(min_x, x)
+        max_x = max(max_x, x)
+        min_y = min(min_y, y)
+        max_y = max(max_y, y)
+    return Fraction(min_x + max_x, 2), Fraction(min_y + max_y, 2)
+
+
+sample = [(0, 0), (2, 2), (8, 2)]
+assert midpoint(sample[0], sample[2]) == (4, 1)
+assert centroid(sample) == (Fraction(10, 3), Fraction(4, 3))
+assert bounding_box_center(sample) == (4, 1)
+assert centroid([(3, -5)]) == (3, -5)
+assert bounding_box_center([(3, -5)]) == (3, -5)
+assert midpoint((0, 0), (1, 1)) == (Fraction(1, 2), Fraction(1, 2))
+assert centroid([(0, 0), (0, 0), (6, 0)]) == (2, 0)
+assert bounding_box_center([(0, 0), (0, 0), (6, 0)]) == (3, 0)
+assert centroid(iter(sample)) == centroid(sample)
+assert sample == [(0, 0), (2, 2), (8, 2)]</code></pre>
+<p>Each function needs its own iterator if the input is generated lazily. Calling both functions on the same exhausted iterator makes the second call see empty input.</p>
+<h2>Walkthrough and Correctness</h2>
+<p>For the sample above, the centroid scan maintains <code>(total_x, total_y, count)</code>:</p>
+<ul><li>After <code>(0, 0)</code>: <code>(0, 0, 1)</code>.</li><li>After <code>(2, 2)</code>: <code>(2, 2, 2)</code>.</li><li>After <code>(8, 2)</code>: <code>(10, 4, 3)</code>.</li></ul>
+<p>After each iteration, the totals equal the coordinate sums of all points seen so far. Dividing the final sums by the final count therefore gives the mean in each coordinate.</p>
+<p>The bounding-box scan instead maintains <code>(min_x, max_x, min_y, max_y)</code>. For this input it ends at <code>(0, 8, 0, 2)</code>. Each update preserves the extremes of the points seen so far, so the final rectangle is the smallest axis-aligned enclosure. Taking the midpoint of each pair of opposite bounds gives its center, <code>(4, 1)</code>. That point need not be one of the input points.</p>
 <h2>Clarify the Distance Model</h2>
 <p>Another hidden ambiguity is the distance function.</p>
-<ul><li>Under squared Euclidean distance, the centroid is the natural center.</li><li>Under Manhattan distance in one dimension, the median is often the better center.</li><li>If the task requires a center chosen from the input points, the answer may be different again.</li></ul>
+<ul><li>To minimize the sum of squared Euclidean distances over all possible centers, use the centroid. For one coordinate, the sum of squared deviations from any candidate equals the sum around the mean plus <code>N</code> times the squared distance from that mean; it is minimized at the mean.</li><li>To minimize the sum of ordinary Euclidean distances, the task asks for a geometric median, which is generally different from the centroid.</li><li>To minimize total Manhattan distance in one dimension, use a median. In two dimensions, choose a median independently for each coordinate when any center is allowed. With an even count, any value between the two middle values minimizes the corresponding one-dimensional sum.</li><li>If the task requires a center chosen from the input points, the answer may be different again.</li></ul>
 <p>That is why the best interview answer is not only a formula, but also a short clarification about what &quot;center&quot; means in the problem statement.</p>
 <h2>Numerical and Edge Cases</h2>
-<ul><li>Empty input should usually return an error or a null result.</li><li>One point is its own center.</li><li>Integer coordinates may produce fractional centers.</li><li>Large coordinates can overflow fixed-width integer arithmetic if you sum before casting.</li></ul>
-<p>When precision matters, use floating-point output or a rational representation if the interviewer asks for exactness.</p>
+<ul><li>Empty input needs an explicit contract; the iterable functions above raise <code>ValueError</code>.</li><li>One point is its own center.</li><li>Integer coordinates may produce fractional centers.</li><li>Large coordinates can overflow fixed-width integer arithmetic if you sum before casting.</li></ul>
+<p>Floating-point output can be appropriate when an error tolerance is specified; it does not guarantee exactness. The examples above keep exact rational results for integer input. A floating-point implementation would need its own rounding and finite-value contract.</p>
 <h2>Complexity</h2>
 <p>Midpoint of two points runs in <code>O(1)</code> time.</p>
-<p>Centroid and bounding-box center for <code>N</code> points both run in <code>O(N)</code> time with <code>O(1)</code> extra space.</p>
+<p>Centroid and bounding-box center for <code>N</code> two-dimensional points both use <code>O(N)</code> arithmetic operations and a constant number of accumulators. They do not store a copy of the input.</p>
+<p>These bounds use the usual unit-cost arithmetic model. Python's arbitrary-size integers and <code>Fraction</code> reduction have costs that grow with operand bit length, so the exact implementation does not promise constant byte storage or constant-time arithmetic for unbounded coordinates. In <code>D</code> dimensions, the scans require <code>O(ND)</code> arithmetic operations and <code>O(D)</code> accumulators.</p>
 <h2>Interview Follow-Up</h2>
 <p>Good follow-up questions include:</p>
 <ul><li>Do we need the exact geometric center or just a representative point?</li><li>Can the answer be outside the original set of points?</li><li>Are coordinates integers, floats, or very large values?</li><li>Which distance metric defines the best center?</li></ul>
