@@ -131,25 +131,73 @@ target = 7</code></pre>
 <p>Binary search finds the leftmost prefix sum greater than or equal to <code>7</code>, which is <code>10</code>, so the selected item is <code>C</code>.</p>
 <p>This reduces each draw from <code>O(N)</code> to <code>O(log N)</code> after <code>O(N)</code> preprocessing.</p>
 <h2>Reference Implementation</h2>
-<pre><code>buildPicker(weights):
-    prefix = []
-    running = 0
+<p>This Python example is an independent educational implementation. It accepts a non-empty iterable of non-negative Python integers, excluding booleans, and requires at least one positive weight. Empty, negative, and all-zero inputs raise <code>ValueError</code>; floats and booleans raise <code>TypeError</code>. Decimal probabilities need a separate representation or an exact conversion to integer ratios.</p>
+<pre><code>from bisect import bisect_left
+import random
 
-    for weight in weights:
-        if weight &lt; 0:
-            error
-        running += weight
-        prefix.append(running)
 
-    if running == 0:
-        error
+class WeightedPicker:
+    def __init__(self, weights):
+        prefix = []
+        total = 0
+        for weight in weights:
+            if type(weight) is not int:
+                raise TypeError(&quot;weights must be integers, not booleans&quot;)
+            if weight &lt; 0:
+                raise ValueError(&quot;weights must be non-negative&quot;)
+            total += weight
+            prefix.append(total)
+        if total == 0:
+            raise ValueError(&quot;at least one weight must be positive&quot;)
+        self._prefix = tuple(prefix)
+        self._total = total
 
-    return prefix, running
+    def pick(self, rng=random):
+        target = rng.randrange(1, self._total + 1)
+        return bisect_left(self._prefix, target)
 
-pickIndex(prefix, totalWeight):
-    target = randomInteger(1, totalWeight)
-    return lowerBound(prefix, target)</code></pre>
-<p>The key detail is <code>lowerBound</code>: return the first index whose value is at least the target.</p>
+
+items = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;]
+picker = WeightedPicker([2, 3, 5])
+index = picker.pick(random.Random(42))
+assert 0 &lt;= index &lt; len(items)
+print(items[index])</code></pre>
+<p><code>randrange</code> excludes its upper bound, so the target is exactly in <code>1..total</code>. <code>bisect_left</code> implements the required lower bound. <code>pick</code> returns an index; keep the item sequence aligned with the original weights. Construction copies cumulative sums and does not mutate the caller's weights. Picks use the fixed distribution with replacement; rebuilding is necessary if the weights change.</p>
+<p>Python integers retain exact sums even beyond 64 bits. The default generator is for simulation and interview examples, not cryptographic selection. A supplied generator must provide a uniform <code>randrange(start, stop)</code> with the same half-open interval convention.</p>
+<h2>Worked Boundaries and Deterministic Tests</h2>
+<p>For <code>[2, 0, 3]</code>, the prefix sums are <code>[2, 2, 5]</code>. Targets <code>1</code> and <code>2</code> select index <code>0</code>; targets <code>3</code>, <code>4</code>, and <code>5</code> select index <code>2</code>. At target <code>2</code>, the leftmost equal prefix is index <code>0</code>, so the zero-weight index <code>1</code> is skipped. At target <code>3</code>, binary search moves past both <code>2</code>s and reaches <code>5</code>.</p>
+<p>The following tests reuse <code>WeightedPicker</code> and supply each possible target directly. Enumerating slots checks exact boundaries without relying on a noisy frequency estimate.</p>
+<pre><code>class FixedTarget:
+    def __init__(self, target):
+        self.target = target
+
+    def randrange(self, start, stop):
+        assert start &lt;= self.target &lt; stop
+        return self.target
+
+
+picker = WeightedPicker([2, 0, 3])
+assert [picker.pick(FixedTarget(t)) for t in range(1, 6)] == [0, 0, 2, 2, 2]
+assert WeightedPicker([0, 4, 0]).pick(FixedTarget(4)) == 1
+assert WeightedPicker([1]).pick(FixedTarget(1)) == 0
+
+for weights, error in [([], ValueError), ([0, 0], ValueError),
+                       ([-1, 2], ValueError), ([1.5], TypeError),
+                       ([True], TypeError)]:
+    try:
+        WeightedPicker(weights)
+    except error:
+        pass
+    else:
+        raise AssertionError(&quot;invalid weights were accepted&quot;)</code></pre>
+<p>For a general index <code>i</code>, let the preceding prefix be <code>0</code> when <code>i = 0</code>. The targets belonging to <code>i</code> are strictly greater than that preceding prefix and at most <code>prefix[i]</code>. Their count is exactly <code>weight[i]</code>. Uniform target generation therefore assigns probability <code>weight[i] / total</code>, including zero probability when adjacent prefixes are equal. Individual random runs can still deviate from the expected proportions.</p>
+<h2>Python Library Choice Versus Prefix Sums</h2>
+<p>In Python, <code>random.choices(items, weights=weights, k=1)</code> is a good fit when you need one or more independent draws and do not need to show the picker internals. It samples <strong>with replacement</strong>, so an item can be returned again on the next draw.</p>
+<p>For an interview or a service that reuses one distribution many times, implement the prefix sums explicitly. That makes the <code>O(N)</code> preprocessing and <code>O(log N)</code> lookup visible, and it gives you a place to validate negative or all-zero weights.</p>
+<pre><code>prefix = [2, 5, 10]
+target = 7
+index = lowerBound(prefix, target)  # 2, selecting C</code></pre>
+<p>Do not use a direct floating-point equality check to decide a boundary. Pick one convention, such as an integer target from <code>1..totalWeight</code>, and use the same lower-bound comparison for every draw.</p>
 <h2>Common Interview Pitfalls</h2>
 <h3>Off-by-One Boundaries</h3>
 <p>Be consistent about the target range.</p>
@@ -174,6 +222,7 @@ pickIndex(prefix, totalWeight):
 <p>For dynamic updates, a Fenwick tree or segment tree becomes more useful because updates and picks can both stay logarithmic.</p>
 <h2>Complexity</h2>
 <ul><li>prefix-sum preprocessing: <code>O(N)</code> time and <code>O(N)</code> space</li><li>one draw with linear scan: <code>O(N)</code></li><li>one draw with binary search: <code>O(log N)</code></li></ul>
+<p>These are operation counts assuming bounded-size arithmetic and constant-cost random target generation. If the total uses <code>B</code> bits, Python big-integer arithmetic/comparisons and random-target generation also depend on <code>B</code>; storing all prefixes uses up to <code>O(NB)</code> bits. Returning one index takes constant additional output space, apart from the target integer.</p>
 <h2>What to Remember</h2>
 <p>Weighted random selection is mostly a search problem disguised as probability. Once you map weights into cumulative ranges, the rest is straightforward:</p>
 <ul><li>preprocess once with prefix sums</li><li>draw one random target in the total range</li><li>use lower bound to find the owner of that target</li></ul>

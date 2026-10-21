@@ -95,28 +95,92 @@ This reduces each draw from `O(N)` to `O(log N)` after `O(N)` preprocessing.
 
 ## Reference Implementation
 
-```text
-buildPicker(weights):
-    prefix = []
-    running = 0
+This Python example is an independent educational implementation. It accepts a non-empty iterable of non-negative Python integers, excluding booleans, and requires at least one positive weight. Empty, negative, and all-zero inputs raise `ValueError`; floats and booleans raise `TypeError`. Decimal probabilities need a separate representation or an exact conversion to integer ratios.
 
-    for weight in weights:
-        if weight < 0:
-            error
-        running += weight
-        prefix.append(running)
+```python
+from bisect import bisect_left
+import random
 
-    if running == 0:
-        error
 
-    return prefix, running
+class WeightedPicker:
+    def __init__(self, weights):
+        prefix = []
+        total = 0
+        for weight in weights:
+            if type(weight) is not int:
+                raise TypeError("weights must be integers, not booleans")
+            if weight < 0:
+                raise ValueError("weights must be non-negative")
+            total += weight
+            prefix.append(total)
+        if total == 0:
+            raise ValueError("at least one weight must be positive")
+        self._prefix = tuple(prefix)
+        self._total = total
 
-pickIndex(prefix, totalWeight):
-    target = randomInteger(1, totalWeight)
-    return lowerBound(prefix, target)
+    def pick(self, rng=random):
+        target = rng.randrange(1, self._total + 1)
+        return bisect_left(self._prefix, target)
+
+
+items = ["A", "B", "C"]
+picker = WeightedPicker([2, 3, 5])
+index = picker.pick(random.Random(42))
+assert 0 <= index < len(items)
+print(items[index])
 ```
 
-The key detail is `lowerBound`: return the first index whose value is at least the target.
+`randrange` excludes its upper bound, so the target is exactly in `1..total`. `bisect_left` implements the required lower bound. `pick` returns an index; keep the item sequence aligned with the original weights. Construction copies cumulative sums and does not mutate the caller's weights. Picks use the fixed distribution with replacement; rebuilding is necessary if the weights change.
+
+Python integers retain exact sums even beyond 64 bits. The default generator is for simulation and interview examples, not cryptographic selection. A supplied generator must provide a uniform `randrange(start, stop)` with the same half-open interval convention.
+
+## Worked Boundaries and Deterministic Tests
+
+For `[2, 0, 3]`, the prefix sums are `[2, 2, 5]`. Targets `1` and `2` select index `0`; targets `3`, `4`, and `5` select index `2`. At target `2`, the leftmost equal prefix is index `0`, so the zero-weight index `1` is skipped. At target `3`, binary search moves past both `2`s and reaches `5`.
+
+The following tests reuse `WeightedPicker` and supply each possible target directly. Enumerating slots checks exact boundaries without relying on a noisy frequency estimate.
+
+```python
+class FixedTarget:
+    def __init__(self, target):
+        self.target = target
+
+    def randrange(self, start, stop):
+        assert start <= self.target < stop
+        return self.target
+
+
+picker = WeightedPicker([2, 0, 3])
+assert [picker.pick(FixedTarget(t)) for t in range(1, 6)] == [0, 0, 2, 2, 2]
+assert WeightedPicker([0, 4, 0]).pick(FixedTarget(4)) == 1
+assert WeightedPicker([1]).pick(FixedTarget(1)) == 0
+
+for weights, error in [([], ValueError), ([0, 0], ValueError),
+                       ([-1, 2], ValueError), ([1.5], TypeError),
+                       ([True], TypeError)]:
+    try:
+        WeightedPicker(weights)
+    except error:
+        pass
+    else:
+        raise AssertionError("invalid weights were accepted")
+```
+
+For a general index `i`, let the preceding prefix be `0` when `i = 0`. The targets belonging to `i` are strictly greater than that preceding prefix and at most `prefix[i]`. Their count is exactly `weight[i]`. Uniform target generation therefore assigns probability `weight[i] / total`, including zero probability when adjacent prefixes are equal. Individual random runs can still deviate from the expected proportions.
+
+## Python Library Choice Versus Prefix Sums
+
+In Python, `random.choices(items, weights=weights, k=1)` is a good fit when you need one or more independent draws and do not need to show the picker internals. It samples **with replacement**, so an item can be returned again on the next draw.
+
+For an interview or a service that reuses one distribution many times, implement the prefix sums explicitly. That makes the `O(N)` preprocessing and `O(log N)` lookup visible, and it gives you a place to validate negative or all-zero weights.
+
+```text
+prefix = [2, 5, 10]
+target = 7
+index = lowerBound(prefix, target)  # 2, selecting C
+```
+
+Do not use a direct floating-point equality check to decide a boundary. Pick one convention, such as an integer target from `1..totalWeight`, and use the same lower-bound comparison for every draw.
 
 ## Common Interview Pitfalls
 
@@ -173,6 +237,8 @@ For dynamic updates, a Fenwick tree or segment tree becomes more useful because 
 - prefix-sum preprocessing: `O(N)` time and `O(N)` space
 - one draw with linear scan: `O(N)`
 - one draw with binary search: `O(log N)`
+
+These are operation counts assuming bounded-size arithmetic and constant-cost random target generation. If the total uses `B` bits, Python big-integer arithmetic/comparisons and random-target generation also depend on `B`; storing all prefixes uses up to `O(NB)` bits. Returning one index takes constant additional output space, apart from the target integer.
 
 ## What to Remember
 
