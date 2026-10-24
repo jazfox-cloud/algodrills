@@ -55,6 +55,14 @@ For negative numbers, behavior can vary by language and signed-integer rules, so
 
 In Python, `(-7) >> 1` is `-4`, matching floor division `(-7) // 2`. It is not division rounded toward zero, which would produce `-3`.
 
+## Signed Values and Language Semantics
+
+Keep the shortcut discussion separate from signed-integer portability. Python uses an arithmetic right shift for integers, so `(-7) >> 1` keeps the sign and gives `-4`. Its `//` operator rounds down and `%` keeps a non-negative remainder when the divisor is positive, so `-7 % 8` is `1`.
+
+Other languages may truncate division toward zero instead. Under that rule, dividing `-7` by `2` produces `-3`, and the remainder can be `-1`. A right shift can also depend on the language, integer type, and compiler rules. Before using a shift or mask with negative input, state the required quotient and remainder contract, then check that the target language implements it.
+
+Do not use a bit mask as a negative-number modulo shortcut unless the target language's signed shift and remainder rules are known to produce the required result. The non-negative precondition in the runnable function below avoids that portability trap.
+
 ## Modulo by Powers of Two
 
 When the divisor is a power of two, modulo can be computed with a bit mask:

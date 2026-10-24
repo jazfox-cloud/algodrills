@@ -111,6 +111,10 @@
 <pre><code>x &gt;&gt; k  ==  x // (2 ** k)</code></pre>
 <p>For negative numbers, behavior can vary by language and signed-integer rules, so interview solutions should state the assumption clearly.</p>
 <p>In Python, <code>(-7) &gt;&gt; 1</code> is <code>-4</code>, matching floor division <code>(-7) // 2</code>. It is not division rounded toward zero, which would produce <code>-3</code>.</p>
+<h2>Signed Values and Language Semantics</h2>
+<p>Keep the shortcut discussion separate from signed-integer portability. Python uses an arithmetic right shift for integers, so <code>(-7) &gt;&gt; 1</code> keeps the sign and gives <code>-4</code>. Its <code>//</code> operator rounds down and <code>%</code> keeps a non-negative remainder when the divisor is positive, so <code>-7 % 8</code> is <code>1</code>.</p>
+<p>Other languages may truncate division toward zero instead. Under that rule, dividing <code>-7</code> by <code>2</code> produces <code>-3</code>, and the remainder can be <code>-1</code>. A right shift can also depend on the language, integer type, and compiler rules. Before using a shift or mask with negative input, state the required quotient and remainder contract, then check that the target language implements it.</p>
+<p>Do not use a bit mask as a negative-number modulo shortcut unless the target language's signed shift and remainder rules are known to produce the required result. The non-negative precondition in the runnable function below avoids that portability trap.</p>
 <h2>Modulo by Powers of Two</h2>
 <p>When the divisor is a power of two, modulo can be computed with a bit mask:</p>
 <pre><code>x % (2 ** k)  ==  x &amp; ((1 &lt;&lt; k) - 1)</code></pre>
