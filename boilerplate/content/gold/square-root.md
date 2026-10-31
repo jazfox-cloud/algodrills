@@ -34,7 +34,7 @@ Handle `0` and `1` directly. For `N >= 2`, the answer lies in `[1, floor(N / 2)]
 ### Binary Search Details
 
 - Set `low = 1` and `high = floor(N / 2)`.
-- Compute `mid = low + (high - low) / 2`.
+- Compute `mid = low + floor((high - low) / 2)`.
 - If `mid <= N / mid`, store `mid` as the current best answer and move right.
 - Otherwise, move left.
 - When the search ends, return the best valid midpoint.
@@ -92,10 +92,14 @@ Newton's method converges quickly by repeatedly improving an estimate. For the e
 x_next = 0.5 * (x + N / x)
 ```
 
-Start with a positive guess and repeat the update until the difference between consecutive estimates is at most the required tolerance.
+This pseudocode accepts a finite, non-negative real `n`, a finite positive absolute tolerance `epsilon`, and a positive integer iteration limit `maxIterations`. It stops on a small update; this is a stopping criterion, not a general floating-point accuracy certificate.
 
 ```text
-approximateSquareRoot(n, epsilon):
+approximateSquareRoot(n, epsilon, maxIterations):
+    if n is not finite or epsilon is not finite or epsilon <= 0:
+        error "finite input and positive finite tolerance required"
+    if maxIterations is not a positive integer:
+        error "positive iteration limit required"
     if n < 0:
         error "square root is undefined for negative real numbers"
 
@@ -104,13 +108,15 @@ approximateSquareRoot(n, epsilon):
 
     estimate = max(1, n)
 
-    while true:
-        next = 0.5 * (estimate + n / estimate)
+    repeat maxIterations times:
+        next = 0.5 * estimate + 0.5 * (n / estimate)
 
         if abs(next - estimate) <= epsilon:
             return next
 
         estimate = next
+
+    error "iteration limit reached; tolerance not met"
 ```
 
 For `N = 10`, the estimates begin like this:
@@ -124,14 +130,14 @@ For `N = 10`, the estimates begin like this:
 3.1622776...
 ```
 
-The sequence quickly approaches `sqrt(10)`. A production numerical routine may use a relative error test as well, but an explicit absolute tolerance is usually enough for an interview answer when the expected input range is known.
+The sequence quickly approaches `sqrt(10)`. In exact arithmetic, starting at `max(1, n)` keeps estimates at or above the root, and the returned estimate's absolute error is at most the final update size. Floating-point rounding can instead make an update zero before the requested accuracy is achieved. Absolute tolerance can also permit a large relative error for tiny inputs; define the input range and whether absolute or relative accuracy matters. The iteration limit bounds work when progress is insufficient. Splitting the average into two half-terms avoids overflowing the intermediate sum for large finite inputs.
 
 ## When to Use Each Approach
 
 Use binary search when the output is an integer and you want a simple correctness argument. Use Newton's method when the output is a decimal approximation and fast convergence matters.
 
-- Binary search: `O(log N)` time and `O(1)` extra space.
-- Newton's method: `O(log P)` iterations for roughly `P` bits of precision under standard assumptions, with `O(1)` extra space.
+- Binary search: `O(log N)` iterations for `N >= 2`, with a constant number of stored integers. Time is `O(log N)` and extra space is `O(1)` only under a unit-cost integer model; Python arbitrary-size integer division and storage depend on bit length.
+- Newton's method: once sufficiently close to the root, quadratic convergence takes `O(log P)` additional iterations for roughly `P` bits of precision in exact or suitably high-precision arithmetic. Reaching that neighborhood also depends on the input scale and initial guess. Fixed-precision arithmetic imposes an accuracy floor; the bounded pseudocode performs at most `maxIterations` updates and stores a constant number of numeric values.
 
 The complexity statement for Newton's method depends on the numeric model and precision target, so avoid claiming that it is simply `O(log N)` without explaining what is being measured.
 

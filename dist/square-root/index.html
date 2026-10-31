@@ -103,7 +103,7 @@
 <p>If the goal is to compute <code>floor(sqrt(N))</code> for a non-negative integer <code>N</code>, binary search is a direct and reliable approach. The answer must lie in a bounded interval, and the square function is monotonic on non-negative numbers.</p>
 <p>Handle <code>0</code> and <code>1</code> directly. For <code>N &gt;= 2</code>, the answer lies in <code>[1, floor(N / 2)]</code>, so there is no reason to search all the way to <code>N</code>.</p>
 <h3>Binary Search Details</h3>
-<ul><li>Set <code>low = 1</code> and <code>high = floor(N / 2)</code>.</li><li>Compute <code>mid = low + (high - low) / 2</code>.</li><li>If <code>mid &lt;= N / mid</code>, store <code>mid</code> as the current best answer and move right.</li><li>Otherwise, move left.</li><li>When the search ends, return the best valid midpoint.</li></ul>
+<ul><li>Set <code>low = 1</code> and <code>high = floor(N / 2)</code>.</li><li>Compute <code>mid = low + floor((high - low) / 2)</code>.</li><li>If <code>mid &lt;= N / mid</code>, store <code>mid</code> as the current best answer and move right.</li><li>Otherwise, move left.</li><li>When the search ends, return the best valid midpoint.</li></ul>
 <p>The division comparison matters. In a fixed-width integer type, <code>mid * mid</code> may overflow before it is compared with <code>N</code>. Comparing <code>mid &lt;= N / mid</code> expresses the same condition without performing the risky multiplication.</p>
 <h3>Runnable Python</h3>
 <pre><code>def integer_square_root(n: int) -&gt; int:
@@ -139,8 +139,12 @@ mid = 6   -&gt; 6 &gt; 27 / 6, so move left</code></pre>
 <h2>Approach 2: Newton's Method for a Decimal Approximation</h2>
 <p>Newton's method converges quickly by repeatedly improving an estimate. For the equation <code>x^2 - N = 0</code>, the update rule is:</p>
 <pre><code>x_next = 0.5 * (x + N / x)</code></pre>
-<p>Start with a positive guess and repeat the update until the difference between consecutive estimates is at most the required tolerance.</p>
-<pre><code>approximateSquareRoot(n, epsilon):
+<p>This pseudocode accepts a finite, non-negative real <code>n</code>, a finite positive absolute tolerance <code>epsilon</code>, and a positive integer iteration limit <code>maxIterations</code>. It stops on a small update; this is a stopping criterion, not a general floating-point accuracy certificate.</p>
+<pre><code>approximateSquareRoot(n, epsilon, maxIterations):
+    if n is not finite or epsilon is not finite or epsilon &lt;= 0:
+        error &quot;finite input and positive finite tolerance required&quot;
+    if maxIterations is not a positive integer:
+        error &quot;positive iteration limit required&quot;
     if n &lt; 0:
         error &quot;square root is undefined for negative real numbers&quot;
 
@@ -149,13 +153,15 @@ mid = 6   -&gt; 6 &gt; 27 / 6, so move left</code></pre>
 
     estimate = max(1, n)
 
-    while true:
-        next = 0.5 * (estimate + n / estimate)
+    repeat maxIterations times:
+        next = 0.5 * estimate + 0.5 * (n / estimate)
 
         if abs(next - estimate) &lt;= epsilon:
             return next
 
-        estimate = next</code></pre>
+        estimate = next
+
+    error &quot;iteration limit reached; tolerance not met&quot;</code></pre>
 <p>For <code>N = 10</code>, the estimates begin like this:</p>
 <pre><code>10
 5.5
@@ -163,10 +169,10 @@ mid = 6   -&gt; 6 &gt; 27 / 6, so move left</code></pre>
 3.1960050...
 3.1624556...
 3.1622776...</code></pre>
-<p>The sequence quickly approaches <code>sqrt(10)</code>. A production numerical routine may use a relative error test as well, but an explicit absolute tolerance is usually enough for an interview answer when the expected input range is known.</p>
+<p>The sequence quickly approaches <code>sqrt(10)</code>. In exact arithmetic, starting at <code>max(1, n)</code> keeps estimates at or above the root, and the returned estimate's absolute error is at most the final update size. Floating-point rounding can instead make an update zero before the requested accuracy is achieved. Absolute tolerance can also permit a large relative error for tiny inputs; define the input range and whether absolute or relative accuracy matters. The iteration limit bounds work when progress is insufficient. Splitting the average into two half-terms avoids overflowing the intermediate sum for large finite inputs.</p>
 <h2>When to Use Each Approach</h2>
 <p>Use binary search when the output is an integer and you want a simple correctness argument. Use Newton's method when the output is a decimal approximation and fast convergence matters.</p>
-<ul><li>Binary search: <code>O(log N)</code> time and <code>O(1)</code> extra space.</li><li>Newton's method: <code>O(log P)</code> iterations for roughly <code>P</code> bits of precision under standard assumptions, with <code>O(1)</code> extra space.</li></ul>
+<ul><li>Binary search: <code>O(log N)</code> iterations for <code>N &gt;= 2</code>, with a constant number of stored integers. Time is <code>O(log N)</code> and extra space is <code>O(1)</code> only under a unit-cost integer model; Python arbitrary-size integer division and storage depend on bit length.</li><li>Newton's method: once sufficiently close to the root, quadratic convergence takes <code>O(log P)</code> additional iterations for roughly <code>P</code> bits of precision in exact or suitably high-precision arithmetic. Reaching that neighborhood also depends on the input scale and initial guess. Fixed-precision arithmetic imposes an accuracy floor; the bounded pseudocode performs at most <code>maxIterations</code> updates and stores a constant number of numeric values.</li></ul>
 <p>The complexity statement for Newton's method depends on the numeric model and precision target, so avoid claiming that it is simply <code>O(log N)</code> without explaining what is being measured.</p>
 <h2>Edge Cases</h2>
 <ul><li><code>N = 0</code>: return <code>0</code> before any division.</li><li><code>N = 1</code>: return <code>1</code> directly.</li><li><code>N = 2</code> and <code>N = 3</code>: return <code>1</code>; they are the smallest non-perfect-square inputs.</li><li><code>0 &lt; N &lt; 1</code>: a decimal implementation should not use <code>N / 2</code> as an upper bound because the square root is greater than <code>N</code>.</li><li>Negative input: reject it unless complex-number output is part of the contract. The Python function above raises <code>ValueError</code>.</li><li>Non-integer input: reject it for the integer-floor contract. The Python function raises <code>TypeError</code>, including for booleans.</li><li>Large integers: avoid <code>mid * mid</code> unless the language provides a wider safe type.</li><li>Approximate output: define the tolerance and ensure the iteration cannot divide by zero.</li></ul>
