@@ -44,14 +44,14 @@ If the task is only to group negatives on one side and positives on the other, u
 
 - Start one pointer at the left and another at the right.
 - Move the left pointer forward while it already points to a negative number.
-- Move the right pointer backward while it already points to a positive number.
+- Move the right pointer backward while it already points to a non-negative number, including zero.
 - When both pointers stop on misplaced values, swap them.
 
-This finishes in `O(N)` time and uses `O(1)` extra space.
+The in-place scan finishes in `O(N)` time and uses `O(1)` extra space. The runnable version below copies its input and therefore uses `O(N)` extra space.
 
 ### Why This Works
 
-The left pointer searches for a positive value that belongs on the right side. The right pointer searches for a negative value that belongs on the left side. Every swap fixes two misplaced positions at once.
+The left pointer searches for a non-negative value that belongs on the right side. The right pointer searches for a negative value that belongs on the left side. Every swap fixes two misplaced positions at once.
 
 This is the best answer when:
 
@@ -207,7 +207,7 @@ The stability mistake is especially common. A two-pointer partition is fast, but
 
 ## Complexity
 
-- simple partitioning: `O(N)` time and `O(1)` extra space
+- in-place partitioning: `O(N)` time and `O(1)` extra space; the copied-input implementation above uses `O(N)` extra space
 - stable grouping or stable alternation with helper arrays: `O(N)` time and `O(N)` extra space
 
 ## Interview-Ready Summary

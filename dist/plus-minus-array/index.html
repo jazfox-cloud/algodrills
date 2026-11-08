@@ -107,10 +107,10 @@
 <p>Those questions matter because different answers lead to different implementations. A two-pointer swap is fine for an unstable partition, but it is the wrong tool if the interviewer asks for stable ordering.</p>
 <h2>Variant 1: Partition By Sign</h2>
 <p>If the task is only to group negatives on one side and positives on the other, use a two-pointer scan.</p>
-<ul><li>Start one pointer at the left and another at the right.</li><li>Move the left pointer forward while it already points to a negative number.</li><li>Move the right pointer backward while it already points to a positive number.</li><li>When both pointers stop on misplaced values, swap them.</li></ul>
-<p>This finishes in <code>O(N)</code> time and uses <code>O(1)</code> extra space.</p>
+<ul><li>Start one pointer at the left and another at the right.</li><li>Move the left pointer forward while it already points to a negative number.</li><li>Move the right pointer backward while it already points to a non-negative number, including zero.</li><li>When both pointers stop on misplaced values, swap them.</li></ul>
+<p>The in-place scan finishes in <code>O(N)</code> time and uses <code>O(1)</code> extra space. The runnable version below copies its input and therefore uses <code>O(N)</code> extra space.</p>
 <h3>Why This Works</h3>
-<p>The left pointer searches for a positive value that belongs on the right side. The right pointer searches for a negative value that belongs on the left side. Every swap fixes two misplaced positions at once.</p>
+<p>The left pointer searches for a non-negative value that belongs on the right side. The right pointer searches for a negative value that belongs on the left side. Every swap fixes two misplaced positions at once.</p>
 <p>This is the best answer when:</p>
 <ul><li>the interviewer does not require stable order</li><li>only the final sign partition matters</li><li>in-place space usage is more important than preserving the original sequence</li></ul>
 <h3>Runnable Python: Partitioning</h3>
@@ -185,7 +185,7 @@ result     = [-2, 3, -5, 6, -1, 4]</code></pre>
 <ul><li>assuming there is only one valid output</li><li>forgetting to define how <code>0</code> should be treated</li><li>claiming a stable order when swaps actually changed relative positions</li><li>alternating signs without explaining what happens when one side runs out</li><li>jumping to a complicated in-place stable method before giving the simpler linear-space answer</li></ul>
 <p>The stability mistake is especially common. A two-pointer partition is fast, but it absolutely does not preserve original order.</p>
 <h2>Complexity</h2>
-<ul><li>simple partitioning: <code>O(N)</code> time and <code>O(1)</code> extra space</li><li>stable grouping or stable alternation with helper arrays: <code>O(N)</code> time and <code>O(N)</code> extra space</li></ul>
+<ul><li>in-place partitioning: <code>O(N)</code> time and <code>O(1)</code> extra space; the copied-input implementation above uses <code>O(N)</code> extra space</li><li>stable grouping or stable alternation with helper arrays: <code>O(N)</code> time and <code>O(N)</code> extra space</li></ul>
 <h2>Interview-Ready Summary</h2>
 <p>The strongest concise answer is:</p>
 <ul><li>first clarify whether the task is partitioning or strict alternation</li><li>ask whether order must stay stable</li><li>if order does not matter, use a two-pointer partition in linear time and constant space</li><li>if order must stay stable, collect negatives and positives separately and merge them back in the required pattern</li></ul>
