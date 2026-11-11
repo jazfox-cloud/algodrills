@@ -110,6 +110,23 @@ assert events == [("A", 0), ("B", 7)]
 
 The callback at time 7 reports the newly observed leader. It does not claim that the physical overtake happened exactly at time 7.
 
+## Same-Timestamp Event Order
+
+Calls at the same timestamp see the state left by earlier calls at that timestamp. A speed update advances only its own car to that time before replacing its speed; it cannot retroactively change a prior observation. This makes the caller's event order part of the input contract.
+
+```python
+same_time_events = []
+same_time = DistanceRace({"A": 1, "B": 1},
+                         lambda car_id, t: same_time_events.append((car_id, t)))
+assert same_time.leader(0) == "A"
+assert same_time.update("B", 3, 2) == "A"
+assert same_time.update("A", 0, 2) == "A"
+assert same_time.leader(3) == "B"
+assert same_time_events == [("A", 0), ("B", 3)]
+```
+
+At time 2, both cars first reach distance 2. Updating B first changes only its future speed, so A remains the tie-break winner. Updating A second does not move either car again at the same timestamp. At time 3, B reaches 5 while A remains at 2, so B becomes the newly observed leader. If equal-time events need a different policy, batch and define that policy before calling `update`.
+
 ## Why the Baseline Is Correct
 
 The stored distance for each car is its true distance at its saved timestamp. Initially, that distance is zero. On an update, the old speed has remained constant since the saved timestamp, so adding `old_speed * elapsed_time` preserves this invariant before installing the new speed.

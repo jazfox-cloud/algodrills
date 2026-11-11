@@ -158,6 +158,17 @@ assert race.leader(7) == &quot;B&quot;
 assert race.leader(7) == &quot;B&quot;  # No duplicate notification.
 assert events == [(&quot;A&quot;, 0), (&quot;B&quot;, 7)]</code></pre>
 <p>The callback at time 7 reports the newly observed leader. It does not claim that the physical overtake happened exactly at time 7.</p>
+<h2>Same-Timestamp Event Order</h2>
+<p>Calls at the same timestamp see the state left by earlier calls at that timestamp. A speed update advances only its own car to that time before replacing its speed; it cannot retroactively change a prior observation. This makes the caller's event order part of the input contract.</p>
+<pre><code>same_time_events = []
+same_time = DistanceRace({&quot;A&quot;: 1, &quot;B&quot;: 1},
+                         lambda car_id, t: same_time_events.append((car_id, t)))
+assert same_time.leader(0) == &quot;A&quot;
+assert same_time.update(&quot;B&quot;, 3, 2) == &quot;A&quot;
+assert same_time.update(&quot;A&quot;, 0, 2) == &quot;A&quot;
+assert same_time.leader(3) == &quot;B&quot;
+assert same_time_events == [(&quot;A&quot;, 0), (&quot;B&quot;, 3)]</code></pre>
+<p>At time 2, both cars first reach distance 2. Updating B first changes only its future speed, so A remains the tie-break winner. Updating A second does not move either car again at the same timestamp. At time 3, B reaches 5 while A remains at 2, so B becomes the newly observed leader. If equal-time events need a different policy, batch and define that policy before calling <code>update</code>.</p>
 <h2>Why the Baseline Is Correct</h2>
 <p>The stored distance for each car is its true distance at its saved timestamp. Initially, that distance is zero. On an update, the old speed has remained constant since the saved timestamp, so adding <code>old_speed * elapsed_time</code> preserves this invariant before installing the new speed.</p>
 <p>A query uses that same invariant to compute every car's true position at the requested time. Scanning all positions and applying the ID tie rule therefore returns the specified leader. Comparing that ID with the previous observed leader implements exactly the notification contract.</p>
