@@ -146,6 +146,14 @@
 <p>In that version, a celebrity row and column have a distinctive shape:</p>
 <ul><li>the celebrity row is all <code>0</code>s except possibly the diagonal</li><li>the celebrity column is all <code>1</code>s except the diagonal</li></ul>
 <p>The elimination pass avoids scanning the whole matrix up front. It uses selected row/column comparisons to identify the only column that might satisfy the rule.</p>
+<h2>Small Matrix Example</h2>
+<p>For this matrix, <code>1</code> means the row person knows the column person. Person <code>2</code> is the celebrity because their row has no outgoing relationships and every other row points to column <code>2</code>.</p>
+<pre><code>      0  1  2  3
+0     -  1  1  0
+1     0  -  1  0
+2     0  0  -  0
+3     1  0  1  -</code></pre>
+<p>The candidate pass only needs <code>N - 1</code> calls to <code>knows</code>. After it selects a candidate, the verification pass can use at most <code>2(N - 1)</code> more calls: one to ensure the candidate knows nobody else and one to ensure everybody else knows the candidate. That distinction matters because the first pass narrows the answer; it does not establish it.</p>
 <h2>Reference Pseudocode</h2>
 <pre><code>findCelebrity(n):
     candidate = 0

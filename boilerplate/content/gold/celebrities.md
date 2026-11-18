@@ -134,6 +134,20 @@ In that version, a celebrity row and column have a distinctive shape:
 
 The elimination pass avoids scanning the whole matrix up front. It uses selected row/column comparisons to identify the only column that might satisfy the rule.
 
+## Small Matrix Example
+
+For this matrix, `1` means the row person knows the column person. Person `2` is the celebrity because their row has no outgoing relationships and every other row points to column `2`.
+
+```text
+      0  1  2  3
+0     -  1  1  0
+1     0  -  1  0
+2     0  0  -  0
+3     1  0  1  -
+```
+
+The candidate pass only needs `N - 1` calls to `knows`. After it selects a candidate, the verification pass can use at most `2(N - 1)` more calls: one to ensure the candidate knows nobody else and one to ensure everybody else knows the candidate. That distinction matters because the first pass narrows the answer; it does not establish it.
+
 ## Reference Pseudocode
 
 ```text
