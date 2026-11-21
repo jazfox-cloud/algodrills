@@ -141,7 +141,11 @@ assert letter_combinations(&quot;23&quot;) == [
 ]
 assert letter_combinations(&quot;&quot;) == []
 assert letter_combinations(&quot;7&quot;) == [&quot;p&quot;, &quot;q&quot;, &quot;r&quot;, &quot;s&quot;]
-assert len(letter_combinations(&quot;79&quot;)) == 16</code></pre>
+assert len(letter_combinations(&quot;79&quot;)) == 16
+mixed = letter_combinations(&quot;279&quot;)
+assert len(mixed) == len(set(mixed)) == 48
+assert mixed[:5] == [&quot;apw&quot;, &quot;apx&quot;, &quot;apy&quot;, &quot;apz&quot;, &quot;aqw&quot;]
+assert mixed[-1] == &quot;csz&quot;</code></pre>
 <p>At the start of <code>search(index)</code>, <code>path</code> contains exactly one valid letter for each of the first <code>index</code> digits. Appending a letter extends that invariant by one position. Popping it after the recursive call restores the prefix for the next choice.</p>
 <p>Each complete sequence of choices reaches one leaf, so every valid combination is emitted exactly once. Joining the path creates a separate string; storing the mutable path itself would let later backtracking change earlier results.</p>
 <h2>Worked Example: Input 23</h2>
@@ -149,6 +153,9 @@ assert len(letter_combinations(&quot;79&quot;)) == 16</code></pre>
 <ul><li>Choose <code>a</code>, then try <code>d</code>, <code>e</code>, and <code>f</code> for digit <code>3</code>: emit <code>ad</code>, <code>ae</code>, <code>af</code>.</li><li>Remove <code>a</code> and choose <code>b</code>: emit <code>bd</code>, <code>be</code>, <code>bf</code>.</li><li>Remove <code>b</code> and choose <code>c</code>: emit <code>cd</code>, <code>ce</code>, <code>cf</code>.</li></ul>
 <p>Within the first branch, emitting <code>ad</code> returns to the call with prefix <code>a</code>. The final <code>d</code> is removed before trying <code>e</code>, so the next result is <code>ae</code>, not <code>ade</code>. Once all three second-digit choices finish, the outer call removes <code>a</code> and moves to <code>b</code>.</p>
 <p>The complete result has <code>3 * 3 = 9</code> strings, each of length two, in the order shown in the assertion above.</p>
+<h2>Mixed Branch Sizes: Input 279</h2>
+<p>Before tracing the recursion, count <code>3 × 4 × 4 = 48</code> results. The prefix <code>ap</code> gives four results in order: <code>apw</code>, <code>apx</code>, <code>apy</code>, and <code>apz</code>. After <code>apz</code>, the call for the last digit returns. The call for <code>7</code> removes <code>p</code>, keeps <code>a</code>, and tries <code>q</code>, so the next result is <code>aqw</code>.</p>
+<p>In an interview, use this transition to explain why <code>path.pop()</code> matters: it restores the caller's prefix, so sibling branches can reuse the same list without carrying over letters from the previous branch.</p>
 <h2>Edge Cases to Check</h2>
 <ul><li>Empty input: return <code>[]</code> before entering the search; otherwise the base case would emit an empty string.</li><li>Four-letter digits: <code>7</code> and <code>9</code> each have four choices, so <code>79</code> produces 16 results.</li><li>Repeated digits: <code>22</code> still produces nine distinct strings; do not deduplicate input digits.</li><li>Unsupported characters: <code>10</code>, <code>2a</code>, and <code>2 3</code> raise <code>ValueError</code> before any combinations are generated.</li><li>Long input: the output grows exponentially. Discuss feasible input sizes; a generator can avoid storing all results at once, but cannot avoid the work of enumerating them.</li></ul>
 <h2>Complexity</h2>

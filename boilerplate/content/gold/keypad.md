@@ -90,6 +90,10 @@ assert letter_combinations("23") == [
 assert letter_combinations("") == []
 assert letter_combinations("7") == ["p", "q", "r", "s"]
 assert len(letter_combinations("79")) == 16
+mixed = letter_combinations("279")
+assert len(mixed) == len(set(mixed)) == 48
+assert mixed[:5] == ["apw", "apx", "apy", "apz", "aqw"]
+assert mixed[-1] == "csz"
 ```
 
 At the start of `search(index)`, `path` contains exactly one valid letter for each of the first `index` digits. Appending a letter extends that invariant by one position. Popping it after the recursive call restores the prefix for the next choice.
@@ -107,6 +111,12 @@ Start with an empty path. The first digit, `2`, creates three branches:
 Within the first branch, emitting `ad` returns to the call with prefix `a`. The final `d` is removed before trying `e`, so the next result is `ae`, not `ade`. Once all three second-digit choices finish, the outer call removes `a` and moves to `b`.
 
 The complete result has `3 * 3 = 9` strings, each of length two, in the order shown in the assertion above.
+
+## Mixed Branch Sizes: Input 279
+
+Before tracing the recursion, count `3 × 4 × 4 = 48` results. The prefix `ap` gives four results in order: `apw`, `apx`, `apy`, and `apz`. After `apz`, the call for the last digit returns. The call for `7` removes `p`, keeps `a`, and tries `q`, so the next result is `aqw`.
+
+In an interview, use this transition to explain why `path.pop()` matters: it restores the caller's prefix, so sibling branches can reuse the same list without carrying over letters from the previous branch.
 
 ## Edge Cases to Check
 
